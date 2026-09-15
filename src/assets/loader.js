@@ -1,13 +1,21 @@
-const TILE_FILES = {
-    grass: "tile_0000.png",
-    grassTexture: "tile_0001.png",
-    grassFlowers: "tile_0002.png"
-}
+const TILE_IDS = [
+    0, 1, 2,        // grass variants
+    12, 13, 14,     // path: top-left, top, top-right
+    24, 25, 26,     // path: mid-left, mid-fill, mid-right
+    36, 37, 38,     // path: bottom-left, bottom, bottom-right
+    3, 15,          // orange tree: top + trunk
+    4, 16,          // green tree: top + trunk
+    5, 27, 28,      // single-tile trees/bush
+    29, 17, 43      // decorations: mushroom, vine, pebbles
+];
 
 export async function loadTiles(basePath = "/src/assets/tiles/") {
-    const entries = Object.entries(TILE_FILES);
-    const images = await Promise.all(entries.map(([KeyboardEvent, file]) => loadImage(basePath + file).then(img => [KeyboardEvent, img])))
-    return Object.fromEntries(images);
+    const entries = await Promise.all(TILE_IDS.map((id) => loadImage(basePath + tileFileName(id)).then((img) => [id, img])));
+    return Object.fromEntries(entries);
+}
+
+function tileFileName(id) {
+    return `tile_${String(id).padStart(4, "0")}.png`;
 }
 
 function loadImage(src) {
