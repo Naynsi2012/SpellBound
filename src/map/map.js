@@ -1,10 +1,19 @@
-import { createPath } from "./path.js"
+import { GRID_COLS, GRID_ROWS } from "../core/constants.js";
 
 export function createMap() {
-    const canvas = document.getElementById("game")
+    const grid = [];
+    const grassKeys = ["grass", "grass", "grass", "grass", "grassTexture", "grassFlowers"];
 
-    return {
-        path: createPath(canvas.clientWidth, canvas.height),
-        keep: { x: canvas.width - 150, y: canvas.height / 2 }
+    for (let row = 0; row < GRID_ROWS; row++) {
+        const rowTiles = [];
+        
+        for (let col = 0; col < GRID_COLS; col++) {
+            const key = grassKeys[Math.floor(Math.random() * grassKeys.length)];
+            rowTiles.push(key);
+        }
+
+        grid.push(rowTiles);
     }
+
+    return { grid }
 }
