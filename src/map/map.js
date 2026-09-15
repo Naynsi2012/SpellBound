@@ -1,6 +1,6 @@
 import { GRID_COLS, GRID_ROWS, TILE_SIZE } from "../core/constants.js";
 
-const GRASS_IDS = [0, 0, 0, 1, 2]; // mostly plain grass, sparse variation
+const GRASS_IDS = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 2]; // mostly plain grass, rare variation
 
 // path border tiles (see the 9-slice legend)
 const PATH_TOP = 13, PATH_MID = 25, PATH_BOTTOM = 37;
@@ -52,17 +52,17 @@ function getTileForCell(row, col) {
 function createObjects() {
   const objects = [];
 
-  addStackedTree(objects, 6, PATH_ROW_START - 2, 3, 15);
-  addStackedTree(objects, 10, PATH_ROW_START - 2, 4, 16);
-  addStackedTree(objects, 20, PATH_ROW_START - 2, 4, 16);
-  addStackedTree(objects, 30, PATH_ROW_START - 2, 3, 15);
-  addStackedTree(objects, 8, PATH_ROW_START + 5, 4, 16);
-  addStackedTree(objects, 25, PATH_ROW_START + 5, 3, 15);
+  const treeSpacing = 5; // columns between each tree
+  const topTreeRow = PATH_ROW_START - 3;
+  const bottomTreeRow = PATH_ROW_START + 5;
 
-  objects.push({ tileId: 27, col: 15, row: PATH_ROW_START - 2 });
-  objects.push({ tileId: 5, col: 18, row: PATH_ROW_START + 5 });
-  objects.push({ tileId: 29, col: 22, row: PATH_ROW_START - 1 });
-  objects.push({ tileId: 43, col: 12, row: PATH_ROW_START + 4 });
+  for (let col = PATH_COL_START + 1; col < PATH_COL_END; col += treeSpacing) {
+    addStackedTree(objects, col, topTreeRow, 4, 16); // consistent green tree, top row
+  }
+
+  for (let col = PATH_COL_START + 3; col < PATH_COL_END; col += treeSpacing) {
+    addStackedTree(objects, col, bottomTreeRow, 4, 16); // same type, bottom row, offset so they don't line up in a grid
+  }
 
   return objects;
 }
