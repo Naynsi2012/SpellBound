@@ -14,6 +14,19 @@ export async function loadTiles(basePath = "/src/assets/tiles/") {
     return Object.fromEntries(entries);
 }
 
+export async function loadEnemySprites(basePath = "/src/assets/sprites/") {
+    const ENEMY_FILES = {
+        ghost: "enemy_0.png",
+        cyclops: "enemy_1.png"
+    }
+
+    const entries = await Promise.all(
+        Object.entries(ENEMY_FILES).map(([key, file]) => loadImage(basePath + file).then((img) => [key, img]))
+    )
+    
+    return Object.fromEntries(entries);
+}
+
 function tileFileName(id) {
     return `tile_${String(id).padStart(4, "0")}.png`;
 }
