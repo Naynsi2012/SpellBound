@@ -1,5 +1,5 @@
 export class Enemy {
-    constructor({x, y, word, maxHealth, speed, spriteId}){
+    constructor({x, y, word, maxHealth, speed, spriteId, pathIndex = 0}){
         this.x = x;
         this.y = y;
 
@@ -12,7 +12,7 @@ export class Enemy {
         this.spriteId = spriteId;
 
         // Path movement state
-        this.pathIndex = 0;
+        this.pathIndex = pathIndex;
         this.pathProgress = 0;
         this.damagePerChar = maxHealth / word.length;
     }

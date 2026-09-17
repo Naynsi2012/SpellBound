@@ -30,8 +30,8 @@ export class Game {
 
         // Create enemies
         this.enemies = [
-            this.createEnemy("fire", "ghost"),
-            this.createEnemy("dragon", "cyclops")
+            this.createEnemy("fire", "ghost", 0),
+            this.createEnemy("dragon", "cyclops", 8)
         ]
 
         this.fitToWindow();
@@ -40,8 +40,8 @@ export class Game {
         requestAnimationFrame(time => this.loop(time))
     }
 
-    createEnemy(word, spriteId){
-        const start = this.map.path.start;
+    createEnemy(word, spriteId, pathIndex = 0){
+        const start = this.map.path.points[pathIndex];
 
         return new Enemy({
             x: start.x,
@@ -49,7 +49,8 @@ export class Game {
             word,
             maxHealth: 100,
             speed: 40,
-            spriteId
+            spriteId,
+            pathIndex
         })
     }
 
