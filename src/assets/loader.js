@@ -1,41 +1,36 @@
-const TILE_IDS = [
-    0, 1, 2,        // grass variants
-    12, 13, 14,     // path: top-left, top, top-right
-    24, 25, 26,     // path: mid-left, mid-fill, mid-right
-    36, 37, 38,     // path: bottom-left, bottom, bottom-right
-    3, 15,          // orange tree: top + trunk
-    4, 16,          // green tree: top + trunk
-    5, 27, 28,      // single-tile trees/bush
-    29, 17, 43      // decorations: mushroom, vine, pebbles
-];
+import { TILE_IDS, tileFileName } from "../map/tiles.js";
 
-export async function loadTiles(basePath = "/src/assets/tiles/") {
-    const entries = await Promise.all(TILE_IDS.map((id) => loadImage(basePath + tileFileName(id)).then((img) => [id, img])));
+export async function loadTiles(basePath = "/src/assets/tiles/"){
+    const entries = await Promise.all(
+        TILE_IDS.map(id =>
+            loadImage(basePath + tileFileName(id)).then(img => [id, img])
+        )
+    );
+
     return Object.fromEntries(entries);
 }
 
-export async function loadEnemySprites(basePath = "/src/assets/sprites/") {
+export async function loadEnemySprites(basePath = "/src/assets/sprites/"){
     const ENEMY_FILES = {
         ghost: "enemy_0.png",
         cyclops: "enemy_1.png"
-    }
+    };
 
     const entries = await Promise.all(
-        Object.entries(ENEMY_FILES).map(([key, file]) => loadImage(basePath + file).then((img) => [key, img]))
-    )
-    
-    return Object.fromEntries(entries);
-}
+        Object.entries(ENEMY_FILES).map(([key, file]) =>
+            loadImage(basePath + file).then(img => [key, img])
+        )
+    );
 
-function tileFileName(id) {
-    return `tile_${String(id).padStart(4, "0")}.png`;
+    return Object.fromEntries(entries);
 }
 
 function loadImage(src) {
     return new Promise((resolve, reject) => {
         const img = new Image();
+
         img.onload = () => resolve(img);
         img.onerror = reject;
         img.src = src;
-    })
+    });
 }

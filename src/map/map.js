@@ -1,73 +1,140 @@
-import { GRID_COLS, GRID_ROWS, TILE_SIZE } from "../core/constants.js";
+import { GRID_COLS, GRID_ROWS } from "../core/constants.js";
+import { createPath } from "./path.js";
+import { TILE, getPathTile } from "./tiles.js";
 
-const GRASS_IDS = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 2]; // mostly plain grass, rare variation
+export function createMap(mapData){
+    validateMapData(mapData);
 
-// path border tiles (see the 9-slice legend)
-const PATH_TOP = 13, PATH_MID = 25, PATH_BOTTOM = 37;
-const PATH_TOP_LEFT = 12, PATH_TOP_RIGHT = 14;
-const PATH_MID_LEFT = 24, PATH_MID_RIGHT = 26;
-const PATH_BOTTOM_LEFT = 36, PATH_BOTTOM_RIGHT = 38;
+    const path = createPath(mapData.path)
+    const grid = createBaseGrid(mapData)  
+    applyPath(grid, path)
 
-const PATH_ROW_START = 15;
-const PATH_COL_START = 4;
-const PATH_COL_END = GRID_COLS - 5;
-
-export function createMap() {
-    const grid = [];
-
-    for (let row = 0; row < GRID_ROWS; row++) {
-        const rowTiles = [];
-        for (let col = 0; col < GRID_COLS; col++) {
-            rowTiles.push(getTileForCell(row, col));
-        }
-        grid.push(rowTiles);
+    const objects = createObjects(mapData.objects || [], path)
+    return {
+      id: mapData.id,
+      name: mapData.name,
+      grid,
+      path,
+      objects,
+      spawn: mapData.spawn || null
     }
-
-    const path = {
-        start: { x: PATH_COL_START * TILE_SIZE, y: (PATH_ROW_START + 1) * TILE_SIZE + TILE_SIZE / 2 },
-        end: { x: (PATH_COL_END + 1) * TILE_SIZE, y: (PATH_ROW_START + 1) * TILE_SIZE + TILE_SIZE / 2 }
-    }
-
-    const objects = createObjects();
-    return { grid, path, objects };
 }
 
-function getTileForCell(row, col) {
-    const rowOffset = row - PATH_ROW_START; 
-    const isPathRow = rowOffset >= 0 && rowOffset <= 2;
-    const isPathCol = col >= PATH_COL_START && col <= PATH_COL_END;
+// Create the grass background
+function createBaseGrid(mapData){
+  const baseTile = mapData.terrain?.base === "grass" ? TILE.grass.base : TILE.grass.base;
 
-    if (isPathRow && isPathCol){
-        const isFirstCol = col === PATH_COL_START;
-        const isLastCol = col === PATH_COL_END;
-
-        if (rowOffset === 0) return isFirstCol ? PATH_TOP_LEFT : isLastCol ? PATH_TOP_RIGHT : PATH_TOP;
-        if (rowOffset === 1) return isFirstCol ? PATH_MID_LEFT : isLastCol ? PATH_MID_RIGHT : PATH_MID;
-        return isFirstCol ? PATH_BOTTOM_LEFT : isLastCol ? PATH_BOTTOM_RIGHT : PATH_BOTTOM;
-    }
-
-    return GRASS_IDS[Math.floor(Math.random() * GRASS_IDS.length)];
+  return Array.from({length: GRID_ROWS}, () => Array.from({length: GRID_COLS}, () => baseTile))
 }
 
-function createObjects() {
-  const objects = [];
-
-  const treeSpacing = 5; // columns between each tree
-  const topTreeRow = PATH_ROW_START - 3;
-  const bottomTreeRow = PATH_ROW_START + 5;
-
-  for (let col = PATH_COL_START + 1; col < PATH_COL_END; col += treeSpacing) {
-    addStackedTree(objects, col, topTreeRow, 4, 16); // consistent green tree, top row
+function applyPath(grid, path){
+  for (const cell of path.cells){
+    grid[cell.row][cell.col] = getPathTile(cell, path.cellSet)
   }
+}
 
-  for (let col = PATH_COL_START + 3; col < PATH_COL_END; col += treeSpacing) {
-    addStackedTree(objects, col, bottomTreeRow, 4, 16); // same type, bottom row, offset so they don't line up in a grid
+function createObjects(objectDefinitions, path){
+  const objects = [];
+  const occupied = new Set();
+
+  for (const definition of objectDefinitions){
+    const object = {...definition, kind: definition.type}
+
+    delete object.type;
+
+    validateObject(object, path, occupied)
+    objects.push(object)
+
+    for (const cell of getFootprint(object)){
+      occupied.add(`${cell.col},${cell.row}`)
+    }
   }
 
   return objects;
 }
 
-function addStackedTree(objects, col, topRow, topTileId, trunkTileId) {
-  objects.push({ tileId: topTileId, col, row: topRow });
-  objects.push({ tileId: trunkTileId, col, row: topRow + 1 });
+function validateObject(object, path, occupied){
+  if (!object.kind){
+    throw new Error("Map object is missing it's 'type'");
+  }
+
+  if (typeof object.col !== "number" || typeof object.row !== "number"){
+    throw new Error(`Object '${object.kind}' must have numeric col and row`);
+  }
+
+  const footprint = getFootprint(object)
+
+  for (const cell of footprint){
+    if (cell.col < 0 || cell.col >= GRID_COLS || cell.row < 0 || cell.row >= GRID_ROWS){
+      throw new Error(`Object '${object.kind}' at (${object.col}, ${object.row}) is outside the map`);
+    }
+
+    if (isNearPath(cell.col, cell.row, path.cellSet, 1)){
+      throw new Error(`Object '${object.kind}' at (${object.col}, ${object.row}) overlaps or is too close to the path`);
+    }
+
+    // Don't allow objects to overlap
+    for (let dy = -1; dy <= 1; dy++){
+      for (let dx = -1; dx <= 1; dx++){
+        if (occupied.has(`${cell.col + dx},${cell.row + dy}`)){
+          throw new Error(`Object '${object.kind}' at (${object.col}, ${object.row}) overlaps another object`);
+        }
+      }
+    }
+  }
+}
+
+// Defines the space occupied by each object
+function getFootprint(object){
+  const {kind, col, row} = object;
+
+  if (kind === "greenTree" || kind === "orangeTree"){
+    return [
+      {col, row: row - 2},
+      {col, row: row - 1},
+      {col, row},
+      {col, row: row + 1}
+    ]
+  }
+
+  // Small tree
+  if (kind === "singleTree"){
+    return [
+      {col, row},
+      {col: col + 1, row},
+      {col, row: row + 1},
+      {col: col + 1, row: row + 1}
+    ]
+  }
+
+  // Everything else is currently treated as a single tile
+  return [
+    {col, row}
+  ]
+}
+
+// Check whether a cell is close to the path
+function isNearPath(col, row, pathCellSet, margin){
+  for (let dy = -margin; dy <= margin; dy++){
+    for (let dx = -margin; dx <= margin; dx++){
+      if (pathCellSet.has(`${col + dx},${row + dy}`)) return true;
+    }
+  }
+
+  return false;
+}
+
+// Some basic map validation
+function validateMapData(mapData){
+  if (!mapData || typeof mapData !== "object"){
+    throw new Error("Invalid map data")
+  }
+
+  if (!mapData.id){
+    throw new Error("Map is missing an 'id'")
+  }
+
+  if (!mapData.path){
+    throw new Error(`Map '${mapData.id}' is missing a path`)
+  }
 }
