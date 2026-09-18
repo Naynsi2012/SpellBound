@@ -32,8 +32,8 @@ export class Game {
 
         // Create enemies
         this.enemies = [
-            this.createEnemy("fire", "ghost", 0),
-            this.createEnemy("dragon", "cyclops", 8)
+            this.createEnemy(["fire", "water"], "ghost", 0),
+            this.createEnemy(["fire"], "cyclops", 8)
         ]
 
         initInput((e) => handleKeyDown(e, this.enemies));
@@ -44,13 +44,13 @@ export class Game {
         requestAnimationFrame(time => this.loop(time))
     }
 
-    createEnemy(word, spriteId, pathIndex = 0){
+    createEnemy(words, spriteId, pathIndex = 0){
         const start = this.map.path.points[pathIndex];
 
         return new Enemy({
             x: start.x,
             y: start.y,
-            word,
+            words,
             maxHealth: 100,
             speed: 40,
             spriteId,
@@ -78,6 +78,7 @@ export class Game {
     update(deltaTime){
         updateEnemyPositions(this.enemies, this.map.path, deltaTime)
         this.enemies = removeEnemiesPastPathEnd(this.enemies, this.map.path)
+        this.enemies = this.enemies.filter(enemy => enemy.isAlive())
     }
 
     render(){

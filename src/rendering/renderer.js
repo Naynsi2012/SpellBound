@@ -167,7 +167,7 @@ export class Renderer {
     }
 
     drawEnemyWord(enemy, matchedSequence, textY){
-        const word = enemy.word
+        const word = enemy.getCurrentWord()
         const matched = matchedPrefixLength(matchedSequence, word)
 
         const typed = word.slice(0, matched)

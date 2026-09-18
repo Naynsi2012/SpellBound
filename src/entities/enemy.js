@@ -1,9 +1,10 @@
 export class Enemy {
-    constructor({x, y, word, maxHealth, speed, spriteId, pathIndex = 0}){
+    constructor({x, y, words, maxHealth, speed, spriteId, pathIndex = 0}){
         this.x = x;
         this.y = y;
 
-        this.word = word;
+        this.words = words;
+        this.currentWordIndex = 0;
         this.typedProgress = 0;
 
         this.maxHealth = maxHealth;
@@ -14,10 +15,14 @@ export class Enemy {
         // Path movement state
         this.pathIndex = pathIndex;
         this.pathProgress = 0;
-        this.damagePerChar = maxHealth / word.length;
+        this.damagePerChar = maxHealth / words.length;
     }
 
     isAlive() {
         return this.health > 0;
+    }
+
+    getCurrentWord() {
+        return this.words[this.currentWordIndex]
     }
 }

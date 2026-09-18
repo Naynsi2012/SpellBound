@@ -27,7 +27,19 @@ export function handleKeyDown(e, enemies){
     const key = e.key.toLowerCase();
     buffer += key;
 
-    // const attempt = matchedSequence + key;
+    const currentEnemy = getEnemyWithCompletedWord(buffer, enemies);
+    if (currentEnemy){
+        if (currentEnemy.currentWordIndex < currentEnemy.words.length - 1){
+            currentEnemy.currentWordIndex++;
+        } else{
+            currentEnemy.health = 0;
+        }
+
+        buffer = "";
+        matchedSequence = "";
+        return;
+    }
+
     if (isPrefixOfAnyWord(buffer, enemies)){
         matchedSequence = buffer;
     } else{
@@ -44,5 +56,13 @@ function getMatchingSequence(buffer, enemies){
 }
 
 function isPrefixOfAnyWord(str, enemies){
-    return enemies.some((enemy) => enemy.word.toLowerCase().startsWith(str))
+    return enemies.some((enemy) => {
+        return enemy.getCurrentWord().toLowerCase().startsWith(str)
+    })
+}
+
+function getEnemyWithCompletedWord(buffer, enemies){
+    return enemies.find((enemy) => {
+        return enemy.getCurrentWord().toLowerCase() === buffer
+    })
 }
