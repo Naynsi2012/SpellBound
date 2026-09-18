@@ -4,6 +4,7 @@ import { loadTiles, loadEnemySprites } from "../assets/loader.js"
 import { CANVAS_WIDTH, CANVAS_HEIGHT } from "./constants.js"
 import { Enemy } from "../entities/enemy.js"
 import { updateEnemyPositions, removeEnemiesPastPathEnd } from "../systems/movement.js"
+import { initInput, getTypedBuffer } from "../systems/input.js"
 
 import mapData from "../data/maps/training.json"
 
@@ -33,6 +34,8 @@ export class Game {
             this.createEnemy("fire", "ghost", 0),
             this.createEnemy("dragon", "cyclops", 8)
         ]
+
+        initInput();
 
         this.fitToWindow();
 
@@ -77,6 +80,6 @@ export class Game {
     }
 
     render(){
-        this.renderer.render(this.map, this.enemies)
+        this.renderer.render(this.map, this.enemies, getTypedBuffer())
     }
 }

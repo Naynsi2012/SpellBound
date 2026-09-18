@@ -13,11 +13,12 @@ export class Renderer {
         this.ctx.imageSmoothingEnabled = false;
     }
 
-    render(map, enemies) {
+    render(map, enemies, typedBuffer) {
         this.clear();
         this.drawGrid(map);
         this.drawObjects(map);
-        this.drawEnemies(enemies);
+        this.drawEnemies(enemies, typedBuffer);
+        this.drawInputBox(typedBuffer);
     }
 
     clear() {
@@ -150,7 +151,7 @@ export class Renderer {
         }
     }
 
-    drawEnemies(enemies) {
+    drawEnemies(enemies, typedBuffer) {
         for (const enemy of enemies) {
             const img = this.enemySprites[enemy.spriteId];
             if (!img) continue;
@@ -161,21 +162,66 @@ export class Renderer {
             // Draw the enemy at 2x
             this.ctx.drawImage(img, enemy.x - width / 2, enemy.y - height / 2, width, height);
 
-            // Enemy word
-            this.ctx.fillStyle = "#ffffff";
-            this.ctx.font = "bold 12px monospace";
-            this.ctx.textAlign = "center";
-            this.ctx.textBaseline = "bottom";
-
-            // Small background behind the text
-            const textWidth = this.ctx.measureText(enemy.word).width;
-            const textY = enemy.y - height / 2 - 6;
-
-            this.ctx.fillStyle = "rgba(0, 0, 0, 0.65)";
-            this.ctx.fillRect(enemy.x - textWidth / 2 - 3, textY - 12, textWidth + 6, 14);
-            
-            this.ctx.fillStyle = "#ffffff";
-            this.ctx.fillText(enemy.word, enemy.x, textY);
+            this.drawEnemyWord(enemy, typedBuffer, enemy.y - height / 2 - 6)
         }
     }
+
+    drawEnemyWord(enemy, typedBuffer, textY){
+        const word = enemy.word
+        const matched = matchedPrefixLength(typedBuffer, word)
+
+        const typed = word.slice(0, matched)
+        const remaining = word.slice(matched)
+
+        this.ctx.font = "bold 12px monospace"
+        this.ctx.textAlign = "left"
+        this.ctx.textBaseline = "bottom"
+
+        const totalWidth = this.ctx.measureText(word).width;
+        const startX = enemy.x - totalWidth / 2;
+
+        this.ctx.fillStyle = "rgba(0, 0, 0, 0.65)"
+        this.ctx.fillRect(startX - 3, textY - 12, totalWidth + 6, 14)
+
+        const typedWidth = this.ctx.measureText(typed).width
+
+        this.ctx.fillStyle = "#6dff6d"
+        this.ctx.fillText(typed, startX, textY)
+
+        this.ctx.fillStyle = "#ffffff"
+        this.ctx.fillText(remaining, startX + typedWidth, textY);
+    }
+
+    drawInputBox(buffer){
+        const boxWidth = 300;
+        const boxHeight = 30;
+        const x = (this.canvas.width - boxWidth) / 2;
+        const y = this.canvas.height - boxHeight - 10;
+
+        this.ctx.fillStyle = "rgba(0, 0, 0, 0.6)";
+        this.ctx.fillRect(x, y, boxWidth, boxHeight);
+
+        this.ctx.strokeStyle = "#ffffff"
+        this.ctx.lineWidth = 1
+        this.ctx.strokeRect(x, y, boxWidth, boxHeight)
+
+        this.ctx.font = "16px monospace"
+        this.ctx.textAlign = "left"
+        this.ctx.textBaseline = "middle"
+
+        if (buffer.length === 0){
+            this.ctx.filLStyle = "#888888"
+            this.ctx.fillText("type the enemy's word...", x + 8, y + boxHeight / 2)
+        } else{
+            this.ctx.fillStyle = "#ffffff"
+            this.ctx.fillText(buffer, x + 8, y + boxHeight / 2)
+        }
+    }
+}
+
+function matchedPrefixLength(buffer, word){
+    let i = 0;
+    while (i < buffer.length && i < word.length && buffer[i] === word[i]) i++
+
+    return i;
 }
