@@ -4,7 +4,8 @@ import { loadTiles, loadEnemySprites } from "../assets/loader.js"
 import { CANVAS_WIDTH, CANVAS_HEIGHT } from "./constants.js"
 import { Enemy } from "../entities/enemy.js"
 import { updateEnemyPositions, removeEnemiesPastPathEnd } from "../systems/movement.js"
-import { initInput, getTypedBuffer } from "../systems/input.js"
+import { initInput } from "../systems/input.js"
+import { handleKeyDown, getTypedBuffer, getMatchedSequence } from "../systems/typing.js"
 
 import mapData from "../data/maps/training.json"
 
@@ -35,7 +36,7 @@ export class Game {
             this.createEnemy("dragon", "cyclops", 8)
         ]
 
-        initInput();
+        initInput((e) => handleKeyDown(e, this.enemies));
 
         this.fitToWindow();
 
@@ -80,6 +81,6 @@ export class Game {
     }
 
     render(){
-        this.renderer.render(this.map, this.enemies, getTypedBuffer())
+        this.renderer.render(this.map, this.enemies, getTypedBuffer(), getMatchedSequence())
     }
 }

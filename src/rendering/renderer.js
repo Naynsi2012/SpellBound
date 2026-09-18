@@ -13,11 +13,11 @@ export class Renderer {
         this.ctx.imageSmoothingEnabled = false;
     }
 
-    render(map, enemies, typedBuffer) {
+    render(map, enemies, typedBuffer, matchedSequence) {
         this.clear();
         this.drawGrid(map);
         this.drawObjects(map);
-        this.drawEnemies(enemies, typedBuffer);
+        this.drawEnemies(enemies, matchedSequence);
         this.drawInputBox(typedBuffer);
     }
 
@@ -151,7 +151,7 @@ export class Renderer {
         }
     }
 
-    drawEnemies(enemies, typedBuffer) {
+    drawEnemies(enemies, matchedSequence) {
         for (const enemy of enemies) {
             const img = this.enemySprites[enemy.spriteId];
             if (!img) continue;
@@ -161,14 +161,14 @@ export class Renderer {
 
             // Draw the enemy at 2x
             this.ctx.drawImage(img, enemy.x - width / 2, enemy.y - height / 2, width, height);
-
-            this.drawEnemyWord(enemy, typedBuffer, enemy.y - height / 2 - 6)
+            
+            this.drawEnemyWord(enemy, matchedSequence, enemy.y - height / 2 - 6)
         }
     }
 
-    drawEnemyWord(enemy, typedBuffer, textY){
+    drawEnemyWord(enemy, matchedSequence, textY){
         const word = enemy.word
-        const matched = matchedPrefixLength(typedBuffer, word)
+        const matched = matchedPrefixLength(matchedSequence, word)
 
         const typed = word.slice(0, matched)
         const remaining = word.slice(matched)
@@ -198,24 +198,12 @@ export class Renderer {
         const x = (this.canvas.width - boxWidth) / 2;
         const y = this.canvas.height - boxHeight - 10;
 
-        this.ctx.fillStyle = "rgba(0, 0, 0, 0.6)";
-        this.ctx.fillRect(x, y, boxWidth, boxHeight);
-
-        this.ctx.strokeStyle = "#ffffff"
-        this.ctx.lineWidth = 1
-        this.ctx.strokeRect(x, y, boxWidth, boxHeight)
-
         this.ctx.font = "16px monospace"
-        this.ctx.textAlign = "left"
+        this.ctx.textAlign = "center"
         this.ctx.textBaseline = "middle"
-
-        if (buffer.length === 0){
-            this.ctx.filLStyle = "#888888"
-            this.ctx.fillText("type the enemy's word...", x + 8, y + boxHeight / 2)
-        } else{
-            this.ctx.fillStyle = "#ffffff"
-            this.ctx.fillText(buffer, x + 8, y + boxHeight / 2)
-        }
+ 
+        this.ctx.fillStyle = "#ffffff"
+        this.ctx.fillText(buffer, x + boxWidth / 2, y + boxHeight / 2) 
     }
 }
 
