@@ -2,6 +2,8 @@ export function updateEnemyPositions(enemies, path, deltaTime){
     const deltaSeconds = deltaTime / 1000;
 
     for (const enemy of enemies){
+        if (!enemy.isAlive()) continue
+
         let distance = enemy.speed * deltaSeconds;
 
         while (distance > 0 && enemy.pathIndex < path.points.length - 1) {

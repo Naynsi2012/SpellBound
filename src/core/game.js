@@ -35,7 +35,7 @@ export class Game {
         // Create enemies
         this.enemies = [
             this.createEnemy(["fire", "water"], "ghost", 0),
-            this.createEnemy(["fire"], "cyclops", 8)
+            this.createEnemy(["cream", "fire"], "cyclops", 8)
         ]
 
         initInput((e) => handleKeyDown(e, this.enemies));
@@ -87,7 +87,11 @@ export class Game {
             }
         }
 
-        this.enemies = this.enemies.filter((enemy) => !enemy.reachedEnd && enemy.isAlive())
+        this.enemies = this.enemies.filter((enemy) => {
+            if (enemy.reachedEnd) return false
+            if(!enemy.isAlive() && enemy.flashTimer <= 0) return false
+            return true
+        })
         pruneLockedEnemy(this.enemies)
     }
 
