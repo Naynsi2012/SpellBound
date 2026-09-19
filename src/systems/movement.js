@@ -40,6 +40,7 @@ export function updateEnemyPositions(enemies, path, deltaTime){
 
         if (enemy.pathIndex >= path.points.length - 1){
             enemy.reachedEnd = true
+            enemy.isAttacking = true
         }
     }
 }
