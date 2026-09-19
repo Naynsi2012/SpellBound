@@ -6,6 +6,18 @@
         "base": "grass"
     },
 
+    "platform": {
+        "type": "garden",
+        "col": 54,
+        "row": 10,
+        "tiles": [
+            { "tileId": 99, "dcol": 0, "drow": 2 },
+            { "tileId": 100, "dcol": 1, "drow": 2 },
+            { "tileId": 101, "dcol": 2, "drow": 2 }
+        ],
+        "maxHealth": 100
+    },
+
     "spawn": {
         "col": 2,
         "row": 27

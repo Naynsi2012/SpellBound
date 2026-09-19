@@ -5,35 +5,18 @@ export const TILE = {
     },
 
     path: {
-        topLeft: 12,
-        top: 13,
-        topRight: 14,
-
-        left: 24,
-        fill: 25,
-        right: 26,
-
-        bottomLeft: 36,
-        bottom: 37,
-        bottomRight: 38
+        topLeft: 12, top: 13, topRight: 14,
+        left: 24, fill: 25, right: 26,
+        bottomLeft: 36, bottom: 37, bottomRight: 38
     },
 
     objects: {
-        orangeTreeTop: 3,
-        orangeTreeTrunk: 15,
-
-        greenTreeTop: 4,
-        greenTreeTrunk: 16,
-
+        orangeTreeTop: 3, orangeTreeTrunk: 15,
+        greenTreeTop: 4, greenTreeTrunk: 16,
         singleTree: 5,
-
-        orangeBush: 27,
-        greenBush: 28,
-
+        orangeBush: 27, greenBush: 28,
         mushroom: 29,
-
         vine: 17,
-
         pebbles: 43
     }
 };
@@ -47,7 +30,11 @@ export const TILE_IDS = [
     4, 16,
     5,
     27, 28,
-    29, 17, 43
+    29, 17, 43,
+    108, 109, 110, 111, 123, 125, 126,
+    48, 49, 50, 52, 53, 54,
+    60, 61, 62, 64, 66, 67,
+    80, 81, 82, 83, 85, 89
 ];
 
 export function tileFileName(id) {

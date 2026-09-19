@@ -16,7 +16,8 @@ export function createMap(mapData){
       grid,
       path,
       objects,
-      spawn: mapData.spawn || null
+      spawn: mapData.spawn || null,
+      platform: mapData.platform || null
     }
 }
 
@@ -74,8 +75,10 @@ function validateObject(object, path, occupied){
     }
 
     // Don't allow objects to overlap
-    for (let dy = -1; dy <= 1; dy++){
-      for (let dx = -1; dx <= 1; dx++){
+    const margin = (object.kind === "fence" || object.kind === "fencePost") ? 0 : 1;
+
+    for (let dy = -margin; dy <= margin; dy++){
+      for (let dx = -margin; dx <= margin; dx++){
         if (occupied.has(`${cell.col + dx},${cell.row + dy}`)){
           throw new Error(`Object '${object.kind}' at (${object.col}, ${object.row}) overlaps another object`);
         }
@@ -104,6 +107,14 @@ function getFootprint(object){
       {col: col + 1, row},
       {col, row: row + 1},
       {col: col + 1, row: row + 1}
+    ]
+  }
+
+  if (kind === "houseStone" || kind === "houseOrange"){
+    return [
+      {col: col - 1, row: row - 2}, {col, row: row - 2}, {col: col + 1, row: row - 2},
+      {col: col - 1, row: row - 1}, {col, row: row - 1}, {col: col + 1, row: row - 1},
+      {col: col - 1, row}, {col, row}, {col: col + 1, row}
     ]
   }
 
