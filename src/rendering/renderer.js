@@ -13,11 +13,11 @@ export class Renderer {
         this.ctx.imageSmoothingEnabled = false;
     }
 
-    render(map, enemies, typedBuffer, matchedSequence) {
+    render(map, enemies, typedBuffer, matchedSequence, lockedEnemy) {
         this.clear();
         this.drawGrid(map);
         this.drawObjects(map);
-        this.drawEnemies(enemies, matchedSequence);
+        this.drawEnemies(enemies, matchedSequence, lockedEnemy);
         this.drawInputBox(typedBuffer);
     }
 
@@ -151,7 +151,7 @@ export class Renderer {
         }
     }
 
-    drawEnemies(enemies, matchedSequence) {
+    drawEnemies(enemies, matchedSequence, lockedEnemy) {
         for (const enemy of enemies) {
             if (isFlickering(enemy)) continue;
 
@@ -170,7 +170,7 @@ export class Renderer {
             const uiY = Math.round(y);
 
             this.drawEnemyHealthBar(enemy, uiX, uiY)
-            this.drawEnemyWord(enemy, matchedSequence, uiX, uiY);
+            this.drawEnemyWord(enemy, matchedSequence, uiX, uiY, enemy === lockedEnemy);
         }
     }
 
@@ -194,9 +194,9 @@ export class Renderer {
         this.ctx.strokeRect(x + 0.5, y + 0.5, barWidth - 1, barHeight - 1);
     }
     
-    drawEnemyWord(enemy, matchedSequence, centerX, enemyTopY){
+    drawEnemyWord(enemy, matchedSequence, centerX, enemyTopY, isLocked){
         const word = enemy.getCurrentWord();
-        const matched = matchedPrefixLength(matchedSequence, word);
+        const matched = isLocked ? matchedPrefixLength(matchedSequence, word) : 0;
 
         const typed = word.slice(0, matched);
         const remaining = word.slice(matched);

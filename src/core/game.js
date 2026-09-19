@@ -7,7 +7,7 @@ import { updateEnemyPositions } from "../systems/movement.js"
 import { initInput } from "../systems/input.js"
 import { handleKeyDown, getTypedBuffer, getMatchedSequence } from "../systems/typing.js"
 import { updateEnemyEffects } from "../systems/combat.js"
-import { pruneLockedEnemy } from "../systems/targeting.js"
+import { getLockedEnemy, pruneLockedEnemy } from "../systems/targeting.js"
 
 import mapData from "../data/maps/training.json"
 
@@ -96,6 +96,12 @@ export class Game {
     }
 
     render(){
-        this.renderer.render(this.map, this.enemies, getTypedBuffer(), getMatchedSequence())
+        this.renderer.render(
+            this.map,
+            this.enemies,
+            getTypedBuffer(),
+            getMatchedSequence(),
+            getLockedEnemy()
+        )
     }
 }
