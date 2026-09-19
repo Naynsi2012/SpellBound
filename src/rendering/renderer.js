@@ -206,14 +206,14 @@ export class Renderer {
         this.ctx.textBaseline = "middle";
 
         const paddingX = 5;
-        const paddingY = 4;
+        const textWidth = this.ctx.measureText(word).width;
 
-        const totalWidth = this.ctx.measureText(word).width;
-        const bubbleWidth = totalWidth + paddingX * 2;
+        const bubbleWidth = Math.ceil(textWidth + paddingX * 2);
         const bubbleHeight = 18;
 
-        const bubbleX = Math.round(centerX - bubbleWidth / 2);
-        const bubbleY = enemyTopY - 30;
+        const bubbleCenterX = Math.round(centerX);
+        const bubbleX = Math.round(bubbleCenterX - bubbleWidth / 2);
+        const bubbleY = Math.round(enemyTopY - 30);
 
         // bubble background
         this.ctx.fillStyle = "#252525";
@@ -227,14 +227,14 @@ export class Renderer {
         // small bubble pointer
         this.ctx.fillStyle = "#252525";
         this.ctx.beginPath();
-        this.ctx.moveTo(centerX - 4, bubbleY + bubbleHeight);
-        this.ctx.lineTo(centerX, bubbleY + bubbleHeight + 4);
-        this.ctx.lineTo(centerX + 4, bubbleY + bubbleHeight);
+        this.ctx.moveTo(bubbleCenterX - 4, bubbleY + bubbleHeight);
+        this.ctx.lineTo(bubbleCenterX, bubbleY + bubbleHeight + 4);
+        this.ctx.lineTo(bubbleCenterX + 4, bubbleY + bubbleHeight);
         this.ctx.fill();
 
         // word
-        const textX = bubbleX + paddingX;
-        const textY = bubbleY + bubbleHeight / 2;
+        const textX = Math.round(bubbleX + paddingX);
+        const textY = Math.round(bubbleY + bubbleHeight / 2);
         const typeWidth = this.ctx.measureText(typed).width;
 
         this.ctx.fillStyle = "#6dff6d";
