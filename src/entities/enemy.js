@@ -17,7 +17,6 @@ export class Enemy {
         this.pathProgress = 0;
         this.reachedEnd = false;
 
-
         this.damagePerWord = maxHealth / words.length;
         this.flashTimer = 0;
     }

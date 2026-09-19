@@ -164,43 +164,35 @@ export class Renderer {
             const x = enemy.x - width / 2;
             const y = enemy.y - height / 2;
 
-            // this.ctx.drawImage(img, enemy.x - width / 2, enemy.y - height / 2, width, height);            
-            // this.drawEnemyWord(enemy, matchedSequence, enemy.y - height / 2 - 6)
-
             this.ctx.drawImage(img, x, y, width, height);
 
             const uiX = Math.round(enemy.x);
             const uiY = Math.round(y);
 
+            this.drawEnemyHealthBar(enemy, uiX, uiY)
             this.drawEnemyWord(enemy, matchedSequence, uiX, uiY);
         }
     }
 
-    // drawEnemyWord(enemy, matchedSequence, textY){
-    //     const word = enemy.getCurrentWord()
-    //     const matched = matchedPrefixLength(matchedSequence, word)
+    drawEnemyHealthBar(enemy, centerX, enemyTopY){
+        const barWidth = 30;
+        const barHeight = 4;
 
-    //     const typed = word.slice(0, matched)
-    //     const remaining = word.slice(matched)
+        const x = Math.round(centerX - barWidth / 2);
+        const y = Math.round(enemyTopY - 6);
 
-    //     this.ctx.font = "bold 12px monospace"
-    //     this.ctx.textAlign = "left"
-    //     this.ctx.textBaseline = "bottom"
+        const healthRatio = Math.max(0, Math.min(1, enemy.health / enemy.maxHealth));
 
-    //     const totalWidth = this.ctx.measureText(word).width;
-    //     const startX = enemy.x - totalWidth / 2;
+        this.ctx.fillStyle = "#171717";
+        this.ctx.fillRect(x, y, barWidth, barHeight);
 
-    //     this.ctx.fillStyle = "rgba(0, 0, 0, 0.65)"
-    //     this.ctx.fillRect(startX - 3, textY - 12, totalWidth + 6, 14)
+        this.ctx.fillStyle = "#65d85a";
+        this.ctx.fillRect(x + 1, y + 1, Math.round((barWidth - 2) * healthRatio), barHeight - 2);
 
-    //     const typedWidth = this.ctx.measureText(typed).width
-
-    //     this.ctx.fillStyle = "#6dff6d"
-    //     this.ctx.fillText(typed, startX, textY)
-
-    //     this.ctx.fillStyle = "#ffffff"
-    //     this.ctx.fillText(remaining, startX + typedWidth, textY);
-    // }
+        this.ctx.strokeStyle = "#000";
+        this.ctx.lineWidth = 1;
+        this.ctx.strokeRect(x + 0.5, y + 0.5, barWidth - 1, barHeight - 1);
+    }
     
     drawEnemyWord(enemy, matchedSequence, centerX, enemyTopY){
         const word = enemy.getCurrentWord();
@@ -221,7 +213,7 @@ export class Renderer {
         const bubbleHeight = 18;
 
         const bubbleX = Math.round(centerX - bubbleWidth / 2);
-        const bubbleY = enemyTopY - 25;
+        const bubbleY = enemyTopY - 30;
 
         // bubble background
         this.ctx.fillStyle = "#252525";
@@ -240,10 +232,9 @@ export class Renderer {
         this.ctx.lineTo(centerX + 4, bubbleY + bubbleHeight);
         this.ctx.fill();
 
+        // word
         const textX = bubbleX + paddingX;
         const textY = bubbleY + bubbleHeight / 2;
-
-        // word
         const typeWidth = this.ctx.measureText(typed).width;
 
         this.ctx.fillStyle = "#6dff6d";
