@@ -3,6 +3,7 @@ import { TILE } from "../map/tiles.js";
 
 const OBJECT_SCALE = 2;
 const ENEMY_SCALE = 2;
+const PLATFORM_SCALE = 3;
 
 export class Renderer {
     constructor(canvas, ctx, tiles, enemySprites) {
@@ -13,12 +14,16 @@ export class Renderer {
         this.ctx.imageSmoothingEnabled = false;
     }
 
-    render(map, enemies, typedBuffer, matchedSequence, lockedEnemy) {
+    render(map, enemies, typedBuffer, matchedSequence, lockedEnemy, platform, state) {
         this.clear();
         this.drawGrid(map);
         this.drawObjects(map);
+        this.drawPlatform(platform);
         this.drawEnemies(enemies, matchedSequence, lockedEnemy);
         this.drawInputBox(typedBuffer);
+
+        if (state === "ready") this.drawReadyScreen();
+        if (state === "gameover") this.drawGameOverScreen();
     }
 
     clear() {
@@ -147,6 +152,41 @@ export class Renderer {
                     }
                 ];
 
+            case "houseStone":
+                return [
+                    { tileId: 60, col: col - 1, row: row - 2 },
+                    { tileId: 63, col, row: row - 2 },
+                    { tileId: 62, col: col + 1, row: row - 2 },
+                    { tileId: 48, col: col - 1, row: row - 1 },
+                    { tileId: 49, col, row: row - 1 },
+                    { tileId: 50, col: col + 1, row: row - 1 },
+                    { tileId: 48, col: col - 1, row },
+                    { tileId: 89, col, row },
+                    { tileId: 50, col: col + 1, row }
+                ];
+
+            case "houseOrange":
+                return [
+                    { tileId: 64, col: col - 1, row: row - 2 },
+                    { tileId: 67, col, row: row - 2 },
+                    { tileId: 66, col: col + 1, row: row - 2 },
+                    { tileId: 52, col: col - 1, row: row - 1 },
+                    { tileId: 53, col, row: row - 1 },
+                    { tileId: 54, col: col + 1, row: row - 1 },
+                    { tileId: 52, col: col - 1, row },
+                    { tileId: 85, col, row },
+                    { tileId: 54, col: col + 1, row }
+                ];
+
+            case "fence":
+                return [{ tileId: 81, col, row }]
+
+            case "fencePost":
+                return [{ tileId: 82, col, row }]
+
+            case "signpost":
+                return [{ tileId: 83, col, row }]
+
             default: return null;
         }
     }
@@ -256,6 +296,69 @@ export class Renderer {
  
         this.ctx.fillStyle = "#ffffff"
         this.ctx.fillText(buffer, x + boxWidth / 2, y + boxHeight / 2) 
+    }
+
+    drawPlatform(platform){
+        if (!platform) return;
+
+        const size = TILE_SIZE * PLATFORM_SCALE;
+        let maxCol = 0, maxRow = 0;
+
+        for (const t of platform.tiles){
+            const img = this.tiles[t.tileId];
+            if (!img) continue;
+
+            const x = platform.x + t.dcol * size;
+            const y = platform.y + t.drow * size;
+
+            this.ctx.drawImage(img, x, y, size, size);
+
+            maxCol = Math.max(maxCol, t.dcol);
+            maxRow = Math.max(maxRow, t.drow);
+        }
+
+        const width = (maxCol + 1) * size;
+        const height = (maxRow + 1) * size;
+
+        this.drawPlatformHealthBar(platform, platform.x, platform.y, width);
+    }
+
+    drawPlatformHealthBar(platform, x, y, width){
+        const barWidth = width;
+        const barHeight = 8;
+        const barY = y - barHeight - 6;
+        
+        const ratio = Math.max(0, platform.health / platform.maxHealth);
+
+        this.ctx.fillStyle = "#171717";
+        this.ctx.fillRect(x, barY, barWidth, barHeight);
+
+        this.ctx.fillStyle = "#e05a4e";
+        this.ctx.fillRect(x + 1, barY + 1, (barWidth - 2) * ratio, barHeight - 2);
+
+        this.ctx.strokeStyle = "#000000";
+        this.ctx.lineWidth = 1;
+        this.ctx.strokeRect(x + 0.5, barY + 0.5, barWidth - 1, barHeight - 1);
+    }
+
+    drawReadyScreen(){
+        this.drawOverlay("Press ENTER to start the wave");
+    }
+
+    drawGameOverScreen(){
+        this.drawOverlay("Game Over - Press ENTER to restart");
+    }
+
+    drawOverlay(promptText){
+        this.ctx.fillStyle = "rgba(0, 0, 0, 0.6)";
+        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+        this.ctx.textAlign = "center";
+        this.ctx.textBaseline = "middle";
+
+        this.ctx.font = "bold 14px monospace";
+        this.ctx.fillStyle = "#ffffff";
+        this.ctx.fillText(promptText, this.canvas.width / 2, this.canvas.height / 2);
     }
 }
 

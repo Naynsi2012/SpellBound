@@ -1,15 +1,17 @@
 import { Renderer } from "../rendering/renderer.js"
 import { createMap } from "../map/map.js"
 import { loadTiles, loadEnemySprites } from "../assets/loader.js"
-import { CANVAS_WIDTH, CANVAS_HEIGHT } from "./constants.js"
+import { CANVAS_WIDTH, CANVAS_HEIGHT, TILE_SIZE } from "./constants.js"
 import { Enemy } from "../entities/enemy.js"
 import { updateEnemyPositions } from "../systems/movement.js"
 import { initInput } from "../systems/input.js"
 import { handleKeyDown, getTypedBuffer, getMatchedSequence } from "../systems/typing.js"
 import { updateEnemyEffects } from "../systems/combat.js"
 import { getLockedEnemy, pruneLockedEnemy } from "../systems/targeting.js"
+import { updatePlatformAttack } from "../systems/platform.js"
+import { Platform } from "../entities/platform.js"
 
-import mapData from "../data/maps/training.json"
+import mapData from "../data/maps/spawn.json"
 
 export class Game {
     constructor() {
@@ -31,19 +33,50 @@ export class Game {
 
         // Build the map from JSON
         this.map = createMap(mapData)
+        this.state = "ready"; 
+        this.setupRun();
 
-        // Create enemies
-        this.enemies = [
-            this.createEnemy(["fire", "water"], "ghost", 0),
-            this.createEnemy(["cream", "fire"], "cyclops", 8)
-        ]
-
-        initInput((e) => handleKeyDown(e, this.enemies));
+        initInput((e) => this.handleKeyDown(e));
 
         this.fitToWindow();
 
         window.addEventListener("resize", () => this.fitToWindow())
         requestAnimationFrame(time => this.loop(time))
+    }
+
+    setupRun(){
+        this.platform = this.createPlatform();
+        this.enemies = [
+            this.createEnemy(["fire", "water"], "ghost", 0),
+            this.createEnemy(["cream", "fire"], "cyclops", 8)
+        ]
+    }
+
+    handleKeyDown(e){
+        if (this.state === "ready" && e.key === "Enter"){
+            this.state = "playing";
+            return
+        }
+        if (this.state === "gameover" && e.key === "Enter"){
+            this.setupRun();
+            this.state = "ready";
+            return;
+        }
+        if (this.state === "playing"){
+            handleKeyDown(e, this.enemies);
+        }
+    }
+
+    createPlatform(){
+        const data = this.map.platform;
+
+        return new Platform({
+            x: data.col * TILE_SIZE,
+            y: data.row * TILE_SIZE,
+            type: data.type,
+            tiles: data.tiles,
+            maxHealth: data.maxHealth
+        })
     }
 
     createEnemy(words, spriteId, pathIndex = 0){
@@ -78,21 +111,22 @@ export class Game {
     }
 
     update(deltaTime){
+        if (this.state !== "playing") return;
+
         updateEnemyPositions(this.enemies, this.map.path, deltaTime)
+        updatePlatformAttack(this.enemies, this.platform, deltaTime)
         updateEnemyEffects(this.enemies, deltaTime)
 
-        for (const enemy of this.enemies){
-            if (enemy.reachedEnd){
-                // Base damage goes here
-            }
-        }
-
+        // Remove enemies that were killed by typing
         this.enemies = this.enemies.filter((enemy) => {
-            if (enemy.reachedEnd) return false
             if(!enemy.isAlive() && enemy.flashTimer <= 0) return false
             return true
         })
         pruneLockedEnemy(this.enemies)
+
+        if (!this.platform.isAlive()){
+            this.state = "gameover"
+        }
     }
 
     render(){
@@ -101,7 +135,9 @@ export class Game {
             this.enemies,
             getTypedBuffer(),
             getMatchedSequence(),
-            getLockedEnemy()
+            getLockedEnemy(),
+            this.platform,
+            this.state
         )
     }
 }
