@@ -35,9 +35,9 @@ export function updateEnemyPositions(enemies, path, deltaTime){
                 }
             }
         }
-    }
-}
 
-export function removeEnemiesPastPathEnd(enemies, path) {
-    return enemies.filter(enemy => enemy.pathIndex < path.points.length - 1);
+        if (enemy.pathIndex >= path.points.length - 1){
+            enemy.reachedEnd = true
+        }
+    }
 }

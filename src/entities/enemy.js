@@ -15,7 +15,11 @@ export class Enemy {
         // Path movement state
         this.pathIndex = pathIndex;
         this.pathProgress = 0;
-        this.damagePerChar = maxHealth / words.length;
+        this.reachedEnd = false;
+
+
+        this.damagePerWord = maxHealth / words.length;
+        this.flashTimer = 0;
     }
 
     isAlive() {

@@ -153,15 +153,15 @@ export class Renderer {
 
     drawEnemies(enemies, matchedSequence) {
         for (const enemy of enemies) {
+            if (isFlickering(enemy)) continue;
+
             const img = this.enemySprites[enemy.spriteId];
             if (!img) continue;
 
             const width = img.width * ENEMY_SCALE;
             const height = img.height * ENEMY_SCALE;
 
-            // Draw the enemy at 2x
-            this.ctx.drawImage(img, enemy.x - width / 2, enemy.y - height / 2, width, height);
-            
+            this.ctx.drawImage(img, enemy.x - width / 2, enemy.y - height / 2, width, height);            
             this.drawEnemyWord(enemy, matchedSequence, enemy.y - height / 2 - 6)
         }
     }
@@ -212,4 +212,9 @@ function matchedPrefixLength(buffer, word){
     while (i < buffer.length && i < word.length && buffer[i] === word[i]) i++
 
     return i;
+}
+
+function isFlickering(enemy){
+    if (enemy.flashTimer <= 0) return false;
+    return Math.floor(enemy.flashTimer / 60) % 2 === 0;
 }

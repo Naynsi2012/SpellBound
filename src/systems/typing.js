@@ -1,3 +1,6 @@
+import { getLockedEnemy, setLockedEnemy, clearLockedEnemy, pickLockedTarget } from "./targeting.js";
+import { resolveWordComplete } from "./combat.js";
+
 let buffer = ""
 let matchedSequence = ""
 
@@ -12,13 +15,13 @@ export function getMatchedSequence(){
 export function clearTypedBuffer(){
     buffer = "";
     matchedSequence = "";
+    clearLockedEnemy();
 }
 
 export function handleKeyDown(e, enemies){
     if (e.key === "Backspace"){
         buffer = buffer.slice(0, -1)
-
-        matchedSequence = getMatchingSequence(buffer, enemies)
+        matchedSequence = recomputeMatch(buffer)
         return
     }
 
@@ -27,42 +30,36 @@ export function handleKeyDown(e, enemies){
     const key = e.key.toLowerCase();
     buffer += key;
 
-    const currentEnemy = getEnemyWithCompletedWord(buffer, enemies);
-    if (currentEnemy){
-        if (currentEnemy.currentWordIndex < currentEnemy.words.length - 1){
-            currentEnemy.currentWordIndex++;
-        } else{
-            currentEnemy.health = 0;
-        }
-
-        buffer = "";
-        matchedSequence = "";
-        return;
-    }
-
-    if (isPrefixOfAnyWord(buffer, enemies)){
-        matchedSequence = buffer;
+    let target = getLockedEnemy();
+    if (!target || !enemies.includes(target) || !target.isAlive()){
+        target = pickLockedTarget(key, enemies);
+        setLockedEnemy(target);
+        matchedSequence = target ? key : "";
     } else{
+        const word = target.getCurrentWord().toLowerCase();
+        const attempt = matchedSequence + key;
+
+        if (word.startsWith(attempt)){
+            matchedSequence = attempt;
+        } else{
+            const relock = pickLockedTarget(key, enemies);
+            setLockedEnemy(relock);
+            matchedSequence = relock ? key : "";
+        }
+    }
+
+    target = getLockedEnemy();
+    if (target && matchedSequence === target.getCurrentWord().toLowerCase()){
+        resolveWordComplete(target);
+        buffer = "";
         matchedSequence = ""
+        clearLockedEnemy();
     }
 }
 
-function getMatchingSequence(buffer, enemies){
-    if (isPrefixOfAnyWord(buffer, enemies)){
-        return buffer;
-    }
-
-    return "";
-}
-
-function isPrefixOfAnyWord(str, enemies){
-    return enemies.some((enemy) => {
-        return enemy.getCurrentWord().toLowerCase().startsWith(str)
-    })
-}
-
-function getEnemyWithCompletedWord(buffer, enemies){
-    return enemies.find((enemy) => {
-        return enemy.getCurrentWord().toLowerCase() === buffer
-    })
+function recomputeMatch(buffer){
+    const target = getLockedEnemy();
+    if (!target) return "";
+    const word = target.getCurrentWord().toLowerCase();
+    return word.startsWith(buffer) ? buffer : "";
 }

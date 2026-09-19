@@ -3,9 +3,11 @@ import { createMap } from "../map/map.js"
 import { loadTiles, loadEnemySprites } from "../assets/loader.js"
 import { CANVAS_WIDTH, CANVAS_HEIGHT } from "./constants.js"
 import { Enemy } from "../entities/enemy.js"
-import { updateEnemyPositions, removeEnemiesPastPathEnd } from "../systems/movement.js"
+import { updateEnemyPositions } from "../systems/movement.js"
 import { initInput } from "../systems/input.js"
 import { handleKeyDown, getTypedBuffer, getMatchedSequence } from "../systems/typing.js"
+import { updateEnemyEffects } from "../systems/combat.js"
+import { pruneLockedEnemy } from "../systems/targeting.js"
 
 import mapData from "../data/maps/training.json"
 
@@ -77,8 +79,16 @@ export class Game {
 
     update(deltaTime){
         updateEnemyPositions(this.enemies, this.map.path, deltaTime)
-        this.enemies = removeEnemiesPastPathEnd(this.enemies, this.map.path)
-        this.enemies = this.enemies.filter(enemy => enemy.isAlive())
+        updateEnemyEffects(this.enemies, deltaTime)
+
+        for (const enemy of this.enemies){
+            if (enemy.reachedEnd){
+                // Base damage goes here
+            }
+        }
+
+        this.enemies = this.enemies.filter((enemy) => !enemy.reachedEnd && enemy.isAlive())
+        pruneLockedEnemy(this.enemies)
     }
 
     render(){
