@@ -1,18 +1,17 @@
-export class Platform{
-    constructor({x, y, type, tiles, maxHealth}){
-        this.x = x;
-        this.y = y;
+export class Platform {
+    constructor({ col, row, type, maxHealth }) {
+        this.col = col;
+        this.row = row;
         this.type = type;
-        this.tiles = tiles;
         this.maxHealth = maxHealth;
         this.health = maxHealth;
     }
 
-    isAlive(){
+    isAlive() {
         return this.health > 0;
     }
 
-    takeDamage(amount){
-        this.health = Math.max(0, this.health - amount)
+    takeDamage(amount) {
+        this.health = Math.max(0, this.health - amount);
     }
 }

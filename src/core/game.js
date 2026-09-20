@@ -71,10 +71,9 @@ export class Game {
         const data = this.map.platform;
 
         return new Platform({
-            x: data.col * TILE_SIZE,
-            y: data.row * TILE_SIZE,
+            col: data.col,
+            row: data.row,
             type: data.type,
-            tiles: data.tiles,
             maxHealth: data.maxHealth
         })
     }
