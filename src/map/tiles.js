@@ -1,3 +1,4 @@
+export const TILE_COUNT = 130;
 export const TILE = {
     grass: {
         base: 0,
@@ -9,33 +10,7 @@ export const TILE = {
         left: 24, fill: 25, right: 26,
         bottomLeft: 36, bottom: 37, bottomRight: 38
     },
-
-    objects: {
-        orangeTreeTop: 3, orangeTreeTrunk: 15,
-        greenTreeTop: 4, greenTreeTrunk: 16,
-        singleTree: 5,
-        orangeBush: 27, greenBush: 28,
-        mushroom: 29,
-        vine: 17,
-        pebbles: 43
-    }
 };
-
-export const TILE_IDS = [
-    0, 1, 2,
-    12, 13, 14,
-    24, 25, 26,
-    36, 37, 38,
-    3, 15,
-    4, 16,
-    5,
-    27, 28,
-    29, 17, 43,
-    108, 109, 110, 111, 123, 125, 126,
-    48, 49, 50, 52, 53, 54,
-    60, 61, 62, 64, 66, 67,
-    80, 81, 82, 83, 85, 89
-];
 
 export function tileFileName(id) {
     return `tile_${String(id).padStart(4, "0")}.png`;
