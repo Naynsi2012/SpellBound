@@ -48,7 +48,7 @@ export class Game {
         this.platform = this.createPlatform();
         this.enemies = [
             this.createEnemy(["fire", "water"], "ghost", 0),
-            this.createEnemy(["cream", "fire"], "cyclops", 8)
+            this.createEnemy(["cream", "fire"], "cyclops", 3)
         ]
     }
 
