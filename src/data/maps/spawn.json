@@ -10,8 +10,8 @@
     },
     "platform": {
         "type": "castle",
-        "col": 41,
-        "row": 4,
+        "col": 39,
+        "row": 0,
         "maxHealth": 100
     },
     "path": {
@@ -47,8 +47,8 @@
         },
         {
             "type": "houseStone",
-            "col": 14,
-            "row": 3
+            "col": 16,
+            "row": 4
         },
         {
             "type": "fencePostL",

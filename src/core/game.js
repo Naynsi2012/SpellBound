@@ -60,8 +60,8 @@ export class Game {
     setupRun(){
         this.platform = this.createPlatform();
         this.enemies = [
-            this.createEnemy(["fire", "water"], "ghost", 0),
-            this.createEnemy(["cream", "fire"], "cyclops", 3)
+            this.createEnemy(["fire", "water", "dragon", "ghost"], "ghost", 0),
+            this.createEnemy(["cream", "fire", "mayank", "pikachu", "master"], "cyclops", 3)
         ]
         resetMana();
         resetCombo();
@@ -96,14 +96,14 @@ export class Game {
                 cycleSpell(1);
                 return;
             }
-            if (e.key === "q" || e.key === "Q"){
-                cycleSpell(-1);
-                return;
-            }
-            if (e.key === "e" || e.key === "E"){
-                cycleSpell(1);
-                return;
-            }
+            // if (e.key === "q" || e.key === "Q"){
+            //     cycleSpell(-1);
+            //     return;
+            // }
+            // if (e.key === "e" || e.key === "E"){
+            //     cycleSpell(1);
+            //     return;
+            // }
 
             handleKeyDown(e, this.enemies, this.trainingMode);
         }
