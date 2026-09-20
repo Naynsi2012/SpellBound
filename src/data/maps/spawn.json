@@ -10,200 +10,48 @@
     },
     "platform": {
         "type": "castle",
-        "col": 42,
+        "col": 41,
         "row": 4,
-        "maxHealth": 100,
-        "tiles": [
-            {
-                "tileId": 111,
-                "dcol": 0,
-                "drow": 0
-            },
-            {
-                "tileId": 111,
-                "dcol": 1,
-                "drow": 0
-            },
-            {
-                "tileId": 111,
-                "dcol": 2,
-                "drow": 0
-            },
-            {
-                "tileId": 111,
-                "dcol": 3,
-                "drow": 0
-            },
-            {
-                "tileId": 111,
-                "dcol": 4,
-                "drow": 0
-            },
-            {
-                "tileId": 126,
-                "dcol": 0,
-                "drow": 1
-            },
-            {
-                "tileId": 126,
-                "dcol": 1,
-                "drow": 1
-            },
-            {
-                "tileId": 126,
-                "dcol": 2,
-                "drow": 1
-            },
-            {
-                "tileId": 126,
-                "dcol": 3,
-                "drow": 1
-            },
-            {
-                "tileId": 126,
-                "dcol": 4,
-                "drow": 1
-            },
-            {
-                "tileId": 126,
-                "dcol": 0,
-                "drow": 2
-            },
-            {
-                "tileId": 125,
-                "dcol": 1,
-                "drow": 2
-            },
-            {
-                "tileId": 126,
-                "dcol": 2,
-                "drow": 2
-            },
-            {
-                "tileId": 125,
-                "dcol": 3,
-                "drow": 2
-            },
-            {
-                "tileId": 126,
-                "dcol": 4,
-                "drow": 2
-            },
-            {
-                "tileId": 126,
-                "dcol": 0,
-                "drow": 3
-            },
-            {
-                "tileId": 126,
-                "dcol": 1,
-                "drow": 3
-            },
-            {
-                "tileId": 123,
-                "dcol": 2,
-                "drow": 3
-            },
-            {
-                "tileId": 126,
-                "dcol": 3,
-                "drow": 3
-            },
-            {
-                "tileId": 126,
-                "dcol": 4,
-                "drow": 3
-            },
-            {
-                "tileId": 108,
-                "dcol": 0,
-                "drow": 4
-            },
-            {
-                "tileId": 109,
-                "dcol": 1,
-                "drow": 4
-            },
-            {
-                "tileId": 110,
-                "dcol": 2,
-                "drow": 4
-            },
-            {
-                "tileId": 108,
-                "dcol": 3,
-                "drow": 4
-            },
-            {
-                "tileId": 109,
-                "dcol": 4,
-                "drow": 4
-            }
-        ]
+        "maxHealth": 100
     },
     "path": {
         "width": 3,
         "points": [
-            {
-                "col": 3,
-                "row": 26
-            },
-            {
-                "col": 12,
-                "row": 26
-            },
-            {
-                "col": 12,
-                "row": 20
-            },
-            {
-                "col": 22,
-                "row": 20
-            },
-            {
-                "col": 22,
-                "row": 13
-            },
-            {
-                "col": 35,
-                "row": 13
-            },
-            {
-                "col": 35,
-                "row": 23
-            },
-            {
-                "col": 48,
-                "row": 23
-            },
-            {
-                "col": 48,
-                "row": 9
-            },
-            {
-                "col": 44,
-                "row": 9
-            }
+            { "col": 3, "row": 26 },
+            { "col": 12, "row": 26 },
+            { "col": 12, "row": 20 },
+            { "col": 22, "row": 20 },
+            { "col": 22, "row": 13 },
+            { "col": 35, "row": 13 },
+            { "col": 35, "row": 23 },
+            { "col": 48, "row": 23 },
+            { "col": 48, "row": 9 },
+            { "col": 44, "row": 9 }
         ]
     },
     "objects": [
         {
             "type": "houseStone",
-            "col": 6,
-            "row": 14
+            "col": 5,
+            "row": 12
         },
         {
             "type": "houseOrange",
-            "col": 11,
-            "row": 14
+            "col": 10,
+            "row": 12
+        },
+        {
+            "type": "houseStoneLarge",
+            "col": 10,
+            "row": 2
         },
         {
             "type": "houseStone",
-            "col": 16,
-            "row": 15
+            "col": 14,
+            "row": 3
         },
         {
-            "type": "fencePost",
+            "type": "fencePostL",
             "col": 4,
             "row": 17
         },
@@ -228,8 +76,8 @@
             "row": 17
         },
         {
-            "type": "fencePost",
-            "col": 9,
+            "type": "fencePostR",
+            "col": 10,
             "row": 17
         },
         {
@@ -240,92 +88,77 @@
         {
             "type": "greenTree",
             "col": 3,
-            "row": 8
+            "row": 7
         },
         {
             "type": "greenTree",
             "col": 8,
+            "row": 6
+        },
+        {
+            "type": "orangeTree",
+            "col": 20,
+            "row": 4
+        },
+        {
+            "type": "greenTree",
+            "col": 26,
+            "row": 5
+        },
+        {
+            "type": "orangeTree",
+            "col": 32,
+            "row": 4
+        },
+        {
+            "type": "greenTree",
+            "col": 51,
+            "row": 5
+        },
+        {
+            "type": "orangeTree",
+            "col": 55,
             "row": 7
         },
         {
-            "type": "orangeTree",
-            "col": 14,
-            "row": 6
-        },
-        {
-            "type": "greenTree",
-            "col": 20,
-            "row": 5
-        },
-        {
-            "type": "orangeTree",
-            "col": 26,
-            "row": 6
-        },
-        {
-            "type": "greenTree",
-            "col": 32,
-            "row": 5
-        },
-        {
-            "type": "orangeTree",
-            "col": 39,
-            "row": 5
-        },
-        {
-            "type": "greenTree",
-            "col": 51,
-            "row": 6
-        },
-        {
-            "type": "orangeTree",
-            "col": 55,
-            "row": 8
-        },
-        {
             "type": "greenTree",
             "col": 55,
-            "row": 27
+            "row": 26
         },
         {
             "type": "orangeTree",
             "col": 51,
-            "row": 29
+            "row": 28
         },
         {
             "type": "greenTree",
             "col": 42,
-            "row": 29
+            "row": 28
         },
         {
             "type": "orangeTree",
             "col": 37,
-            "row": 30
+            "row": 29
         },
         {
             "type": "greenTree",
             "col": 28,
-            "row": 29
+            "row": 28
         },
         {
             "type": "orangeTree",
             "col": 18,
-            "row": 30
+            "row": 29
         },
         {
             "type": "greenTree",
             "col": 3,
-            "row": 31
+            "row": 30
         },
         {
             "type": "singleTree",
             "col": 22,
             "row": 3
-        },
-        {
-            "type": "singleTree",
-            "col": 48,
-            "row": 5
         },
         {
             "type": "greenBush",
@@ -369,13 +202,13 @@
         },
         {
             "type": "mushroom",
-            "col": 31,
-            "row": 17
+            "col": 40,
+            "row": 15
         },
         {
             "type": "mushroom",
-            "col": 40,
-            "row": 15
+            "col": 12,
+            "row": 8
         },
         {
             "type": "pebbles",

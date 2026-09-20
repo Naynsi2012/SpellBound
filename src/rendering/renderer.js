@@ -1,9 +1,9 @@
 import { TILE_SIZE } from "../core/constants.js";
 import { PREFABS, getPrefabSize } from "../map/prefabs.js";
 
-const OBJECT_SCALE = 1.5;
-const ENEMY_SCALE = 1.5;
-const PLATFORM_SCALE = 1.5;
+const OBJECT_SCALE = 1;
+const ENEMY_SCALE = 1;
+const PLATFORM_SCALE = 1;
 
 export class Renderer {
     constructor(canvas, ctx, tiles, enemySprites) {

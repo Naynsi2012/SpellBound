@@ -1,4 +1,4 @@
-export const TILE_COUNT = 130;
+export const TILE_COUNT = 135;
 export const TILE = {
     grass: {
         base: 0,
