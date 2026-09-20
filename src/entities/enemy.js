@@ -24,6 +24,11 @@ export class Enemy {
 
         this.damagePerWord = maxHealth / words.length;
         this.flashTimer = 0;
+
+        this.slowTimer = 0;
+        this.paralyzedTimer = 0;
+        this.burnTimer = 0;
+        this.burnTickTimer = 0;
     }
 
     isAlive() {
