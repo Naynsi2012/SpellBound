@@ -16,6 +16,7 @@ import { cycleSpell, getActiveSpell, resetActiveSpell } from "../systems/spells.
 import { updateStatusEffects } from "../systems/statusEffects.js"
 import { getMenuOptions, getSelectedIndex, moveSelection, getSelectedOption, resetSelection } from "../systems/menu.js"
 import { resetWaves, startWave, updateWaveSpawning, isWaveSpawningComplete, hasNextWave, advanceToNextWave } from "../systems/waves.js"
+import { createScarecrow, getScarecrowPositions } from "../systems/scarecrows.js"
 
 import spawnMapData from "../data/maps/spawn.json"
 import trainingMapData from "../data/maps/training.json"
@@ -72,6 +73,22 @@ export class Game {
             startWave(this.map.path.points[0])
         } else{
             this.setupTrainingTargets();
+        }
+    }
+
+    setupTrainingTargets(){
+        const positions = getScarecrowPositions(this.map.path);
+        this.trainingPositions = positions;
+        this.enemies = positions.map((pos) => createScarecrow(pos));
+    }
+
+    refillTrainingTargets(){
+        while (this.enemies.length < this.trainingPositions.length){
+            const occupied = new Set(this.enemies.map((e) => `${e.x},${e.y}`));
+            const freeSpot = this.trainingPositions.find((pos) => !occupied.has(`${pos.x},${pos.y}`))
+            if (!freeSpot) break;
+            
+            this.enemies.push(createScarecrow(freeSpot));
         }
     }
 
