@@ -147,9 +147,9 @@ export class Renderer {
     }
 
     drawEnemies(enemies, matchedSequence, lockedEnemy) {
-        for (const enemy of enemies) {
-            if (isFlickering(enemy)) continue;
+        const visible = enemies.filter((enemy) => !isFlickering(enemy));
 
+        for (const enemy of enemies) {
             const img = this.enemySprites[enemy.spriteId];
             if (!img) continue;
 
@@ -160,13 +160,18 @@ export class Renderer {
             const y = enemy.y - height / 2;
 
             this.ctx.drawImage(img, x, y, width, height);
+            this.drawEnemyHealthBar(enemy, Math.round(enemy.x), Math.round(enemy.y));
+            this.drawStatusIcons(enemy, Math.round(enemy.x), Math.round(enemy.y));
+        }
 
-            const uiX = Math.round(enemy.x);
-            const uiY = Math.round(y);
+        for (const enemy of visible) {
+            const img = this.enemySprites[enemy.spriteId];
+            if (!img) continue;
 
-            this.drawEnemyHealthBar(enemy, uiX, uiY);
-            this.drawStatusIcons(enemy, uiX, uiY);
-            this.drawEnemyWord(enemy, matchedSequence, uiX, uiY, enemy === lockedEnemy);
+            const height = img.height * ENEMY_SCALE;
+            const y = enemy.y - height / 2;
+
+            this.drawEnemyWord(enemy, matchedSequence, Math.round(enemy.x), Math.round(y), enemy === lockedEnemy);
         }
     }
 

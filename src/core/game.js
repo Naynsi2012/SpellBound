@@ -15,6 +15,7 @@ import { getCombo, resetCombo } from "../systems/penalty.js"
 import { cycleSpell, getActiveSpell, resetActiveSpell } from "../systems/spells.js"
 import { updateStatusEffects } from "../systems/statusEffects.js"
 import { getMenuOptions, getSelectedIndex, moveSelection, getSelectedOption, resetSelection } from "../systems/menu.js"
+import { resetWaves, startWave, updateWaveSpawning, isWaveSpawningComplete, hasNextWave, advanceToNextWave } from "../systems/waves.js"
 
 import spawnMapData from "../data/maps/spawn.json"
 import trainingMapData from "../data/maps/training.json"
@@ -59,14 +60,19 @@ export class Game {
 
     setupRun(){
         this.platform = this.createPlatform();
-        this.enemies = [
-            this.createEnemy(["fire", "water", "dragon", "ghost"], "ghost", 0),
-            this.createEnemy(["cream", "fire", "mayank", "pikachu", "master"], "cyclops", 3)
-        ]
+        this.enemies = [];
+
         resetMana();
         resetCombo();
         resetActiveSpell();
         clearTypedBuffer();
+
+        if (!this.trainingMode){
+            resetWaves();
+            startWave(this.map.path.points[0])
+        } else{
+            this.setupTrainingTargets();
+        }
     }
 
     handleKeyDown(e){
@@ -96,16 +102,8 @@ export class Game {
                 cycleSpell(1);
                 return;
             }
-            // if (e.key === "q" || e.key === "Q"){
-            //     cycleSpell(-1);
-            //     return;
-            // }
-            // if (e.key === "e" || e.key === "E"){
-            //     cycleSpell(1);
-            //     return;
-            // }
 
-            handleKeyDown(e, this.enemies, this.trainingMode);
+            handleKeyDown(e, this.enemies, this.map.path, this.trainingMode);
         }
     }
 
@@ -158,7 +156,12 @@ export class Game {
         updatePlatformAttack(this.enemies, this.platform, deltaTime)
         updateEnemyEffects(this.enemies, deltaTime)
 
-        if (!this.trainingMode) updateMana(deltaTime)
+        if (!this.trainingMode) {
+            updateMana(deltaTime)
+
+            const spawned = updateWaveSpawning(deltaTime, this.map.path.points[0]);
+            this.enemies.push(...spawned);
+        }
 
         const locked = getLockedEnemy();
         if (locked && locked.reachedEnd) interruptCast();
@@ -170,9 +173,18 @@ export class Game {
         })
         pruneLockedEnemy(this.enemies)
 
-        if (!this.trainingMode && !this.platform.isAlive()){
-            this.state = "gameover"
+        if (this.trainingMode){
+            this.refillTrainingTargets();
+        } else if (isWaveSpawningComplete() && this.enemies.length === 0){
+            if (hasNextWave()){
+                advanceToNextWave();
+                startWave(this.map.path.points[0]);
+            } else{
+                this.state = "victory";
+            }
         }
+
+        if (!this.trainingMode && !this.platform.isAlive()) this.state = "gameover";
     }
 
     render(){

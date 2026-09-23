@@ -1,0 +1,25 @@
+{
+    "waves": [
+        {
+            "enemies": [
+                { "words": ["fire"], "spriteId": "ghost", "spawnDelay": 0 },
+                { "words": ["water"], "spriteId": "ghost", "spawnDelay": 1500 },
+                { "words": ["wind"], "spriteId": "ghost", "spawnDelay": 3000 }
+            ]
+        },
+        {
+            "enemies": [
+                { "words": ["dragon"], "spriteId": "cyclops", "spawnDelay": 0 },
+                { "words": ["fire", "cream"], "spriteId": "cyclops", "spawnDelay": 1500 },
+                { "words": ["storm"], "spriteId": "ghost", "spawnDelay": 3000 },
+                { "words": ["storm"], "spriteId": "ghost", "spawnDelay": 4000 }
+            ]
+        },
+        {
+            "enemies": [
+                { "words": ["fire", "cream", "storm"], "spriteId": "cyclops", "spawnDelay": 0 },
+                { "words": ["boss", "guardian", "ancient"], "spriteId": "cyclops", "spawnDelay": 4000, "isBoss": true, "healthMultiplier": 4 }
+            ]
+        }
+    ]
+}
