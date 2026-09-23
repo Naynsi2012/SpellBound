@@ -6,6 +6,7 @@ import { MANA_PER_KEYSTROKE, MANA_FIZZLE_COOLDOWN } from "../core/constants.js";
 
 let buffer = ""
 let matchedSequence = ""
+let awaitingReset = false
 
 export function getTypedBuffer(){
     return buffer;
@@ -15,9 +16,14 @@ export function getMatchedSequence(){
     return matchedSequence;
 }
 
+export function isAwaitingSequence(){
+    return awaitingReset;
+}
+
 export function clearTypedBuffer(){
     buffer = "";
     matchedSequence = "";
+    awaitingReset = false;
     clearLockedEnemy();
 }
 
@@ -31,6 +37,7 @@ export function handleKeyDown(e, enemies, trainingMode = false){
     if (e.key === "Backspace"){
         buffer = buffer.slice(0, -1)
         matchedSequence = recomputeMatch(buffer)
+        awaitingReset = false
         return
     }
 
@@ -48,11 +55,14 @@ export function handleKeyDown(e, enemies, trainingMode = false){
 
     buffer += key;
 
+    if (awaitingReset) return;
+
     let target = getLockedEnemy();
     let matchedSomething = false;
+    const hadProgress = matchedSequence.length > 0;
 
     if (!target || !enemies.includes(target) || !target.isAlive()){
-        target = pickLockedTarget(key, enemies);
+        target = pickLockedTarget(key, enemies, path);
         setLockedEnemy(target);
         matchedSequence = target ? key : "";
         matchedSomething = !!target;
@@ -64,10 +74,8 @@ export function handleKeyDown(e, enemies, trainingMode = false){
             matchedSequence = attempt;
             matchedSomething = true;
         } else{
-            const relock = pickLockedTarget(key, enemies);
-            setLockedEnemy(relock);
-            matchedSequence = relock ? key : "";
-            matchedSomething = !!relock;
+            clearLockedEnemy();
+            matchedSequence = "";
         }
     }
 
@@ -76,12 +84,15 @@ export function handleKeyDown(e, enemies, trainingMode = false){
         else registerMistake();
     }
 
+    if (!matchedSomething && hadProgress) awaitingReset = true;
+
     target = getLockedEnemy();
     if (target && matchedSequence === target.getCurrentWord().toLowerCase()){
         resolveWordComplete(target);
         buffer = "";
         matchedSequence = ""
         clearLockedEnemy();
+        awaitingReset = false;
     }
 }
 
