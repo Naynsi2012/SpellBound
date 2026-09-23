@@ -39,21 +39,21 @@ export function updateWaveSpawning(deltaTime, pathStartPoint){
     const toSpawn = [];
 
     for (const enemy of spawnQueue){
-        if (entry.spawned) continue;
+        if (enemy.spawned) continue;
         if (elapsedSinceWaveStart < enemy.spawnDelay) continue;
 
         enemy.spawnDelay = true;
 
         const health = BASE_HEALTH * (enemy.healthMultiplier ?? 1);
-        const speed = entry.isBoss ? BASE_SPEED * BOSS_SPEED_MULTIPLIER : BASE_SPEED;
+        const speed = enemy.isBoss ? BASE_SPEED * BOSS_SPEED_MULTIPLIER : BASE_SPEED;
 
         toSpawn.push(new Enemy({
             x: pathStartPoint.x,
             y: pathStartPoint.y,
-            words: entry.words,
+            words: enemy.words,
             maxHealth: health,
             speed,
-            spriteId: entry.spriteId,
+            spriteId: enemy.spriteId,
             pathIndex: 0
         }))
     }

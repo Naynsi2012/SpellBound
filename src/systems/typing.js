@@ -33,7 +33,7 @@ export function interruptCast(){
     registerMistake();
 }
 
-export function handleKeyDown(e, enemies, trainingMode = false){
+export function handleKeyDown(e, enemies, path, trainingMode = false){
     if (e.key === "Backspace"){
         buffer = buffer.slice(0, -1)
         matchedSequence = recomputeMatch(buffer)
