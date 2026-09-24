@@ -42,7 +42,7 @@ export function updateWaveSpawning(deltaTime, pathStartPoint){
         if (enemy.spawned) continue;
         if (elapsedSinceWaveStart < enemy.spawnDelay) continue;
 
-        enemy.spawnDelay = true;
+        enemy.spawned = true;
 
         const health = BASE_HEALTH * (enemy.healthMultiplier ?? 1);
         const speed = enemy.isBoss ? BASE_SPEED * BOSS_SPEED_MULTIPLIER : BASE_SPEED;
