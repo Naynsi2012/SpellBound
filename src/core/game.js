@@ -17,6 +17,7 @@ import { updateStatusEffects } from "../systems/statusEffects.js"
 import { getMenuOptions, getSelectedIndex, moveSelection, getSelectedOption, resetSelection } from "../systems/menu.js"
 import { resetWaves, startWave, updateWaveSpawning, isWaveSpawningComplete, hasNextWave, advanceToNextWave, getCurrentWaveNumber, getWaveCount } from "../systems/waves.js"
 import { createScarecrow, getScarecrowPositions } from "../systems/scarecrows.js"
+import { ENEMY_DEATH_LINGER_MS } from "./constants.js"
 
 import spawnMapData from "../data/maps/spawn.json"
 import trainingMapData from "../data/maps/training.json"
@@ -193,7 +194,7 @@ export class Game {
         if (locked && locked.reachedEnd) interruptCast();
 
         this.enemies = this.enemies.filter((enemy) => {
-            if(!enemy.isAlive() && enemy.flashTimer <= 0) return false
+            if(!enemy.isAlive() && enemy.deathTimer >= ENEMY_DEATH_LINGER_MS) return false
             return true
         })
         pruneLockedEnemy(this.enemies)

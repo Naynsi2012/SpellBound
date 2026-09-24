@@ -13,12 +13,12 @@ export function createScarecrow(position) {
     return new Enemy({
         x: position.x,
         y: position.y,
-        words: randomWords(1 + Math.floor(Math.random() * 2)),
+        words: randomWords(1 + Math.floor(Math.random()  *2)),
         maxHealth: SCARECROW_HEALTH,
         speed: 0,
-        spriteId: "ghost",
+        spriteId: "dummy",
         pathIndex: 0
-    });
+    })
 }
 
 export function getScarecrowPositions(path) {

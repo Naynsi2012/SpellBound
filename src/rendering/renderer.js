@@ -28,6 +28,12 @@ const ANIMATIONS = {
     //     hit:    { frames: 1, frameDuration: 240 },
     //     death:  { frames: 4, frameDuration: 150 }
     // }
+    dummy: {
+        frameSize: 32,
+        idle: { row: 0, frames: 4, frameDuration: 180 },
+        hurt: { row: 1, frames: 5, frameDuration: 90 },
+        death: { row: 2, frames: 8, frameDuration: 90 }
+    }
 };
 
 export class Renderer {
@@ -268,21 +274,16 @@ export class Renderer {
             const img = this.enemySprites[enemy.spriteId];
             if (!img) continue;
 
-            const width = img.width * ENEMY_SCALE;
-            const height = img.height * ENEMY_SCALE;
+            const animConfig = ANIMATIONS[enemy.spriteId];
+            const frameSize = animConfig?.frameSize ?? img.width;
+
+            const width = frameSize * ENEMY_SCALE;
+            const height = frameSize * ENEMY_SCALE;
 
             const x = enemy.x - width / 2;
             const y = enemy.y - height / 2;
 
-            this.drawEnemySprite(
-                enemy,
-                img,
-                x,
-                y,
-                width,
-                height
-            );
-
+            this.drawEnemySprite(enemy, img, x, y, width, height);
             const barRect = this.getHealthBarRect(Math.round(enemy.x), Math.round(y));
             
             this.drawEnemyHealthBar(enemy, barRect);
@@ -313,45 +314,21 @@ export class Renderer {
         }
     }
 
-    drawEnemySprite(
-        enemy,
-        img,
-        x,
-        y,
-        width,
-        height
-    ) {
+    drawEnemySprite(enemy, img, x, y, width, height ) {
         const animState = getAnimState(enemy);
-        const animConfig = ANIMATIONS[enemy.spriteId]?.[animState];
+        const spriteAnim = ANIMATIONS[enemy.spriteId];
+        const animConfig = spriteAnim?.[animState];
 
         if (animConfig) {
-            const frameIndex =
-                Math.floor(
-                    enemy.animTimer /
-                    animConfig.frameDuration
-                ) % animConfig.frames;
+            const frameSize = spriteAnim.frameSize;
+            const frameIndex = Math.floor(enemy.animTimer / animConfig.frameDuration) % animConfig.frames;
 
-            const frameWidth = img.width / animConfig.frames;
+            const sx = frameIndex * frameSize;
+            const sy = animConfig.row * frameSize;
 
-            this.ctx.drawImage(
-                img,
-                frameIndex * frameWidth,
-                0,
-                frameWidth,
-                img.height,
-                x,
-                y,
-                width,
-                height
-            );
+            this.ctx.drawImage(img, sx, sy, frameSize, frameSize, x, y, width, height);
         } else {
-            this.ctx.drawImage(
-                img,
-                x,
-                y,
-                width,
-                height
-            );
+            this.ctx.drawImage(img, x, y,  width, height);
         }
     }
 
@@ -887,15 +864,9 @@ export class Renderer {
 }
 
 function isFlickering(enemy) {
-    if (enemy.flashTimer <= 0) {
-        return false;
-    }
-
-    return (
-        Math.floor(
-            enemy.flashTimer / 60
-        ) % 2 === 0
-    );
+    if (!enemy.isAlive()) return false;
+    if (enemy.flashTimer <= 0) return false;
+    return Math.floor(enemy.flashTimer / 60) % 2 === 0;
 }
 
 function overlapsAny(x, y, width, height, rects) {

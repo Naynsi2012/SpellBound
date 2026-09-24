@@ -1,6 +1,7 @@
 import { ENEMY_FLASH_DURATION } from "../core/constants.js"
 import { applySpellEffect } from "./statusEffects.js"
 import { getActiveSpell } from "./spells.js"
+import { getAnimState } from "../entities/animation.js";
 
 export function resolveWordComplete(enemy){
     const isFinalWord = enemy.currentWordIndex >= enemy.words.length - 1;
@@ -18,6 +19,17 @@ export function updateEnemyEffects(enemies, deltaTime){
         if (enemy.flashTimer > 0){
             enemy.flashTimer = Math.max(0, enemy.flashTimer - deltaTime);
         }
-        enemy.animTimer += deltaTime;
+
+        const currentAnimState = getAnimState(enemy);
+        if (currentAnimState !== enemy.lastAnimState){
+            enemy.animTimer = 0;
+            enemy.lastAnimState = currentAnimState;
+        } else{
+            enemy.animTimer += deltaTime;
+        }
+
+        if (!enemy.isAlive()){
+            enemy.deathTimer += deltaTime;
+        }
     }
 }

@@ -4,6 +4,7 @@ export const GRID_ROWS = 34;
 export const CANVAS_WIDTH = GRID_COLS * TILE_SIZE;
 export const CANVAS_HEIGHT = GRID_ROWS * TILE_SIZE;
 export const ENEMY_FLASH_DURATION = 240;
+export const ENEMY_DEATH_LINGER_MS = 700;
 
 export const MANA_MAX = 100;
 export const MANA_PER_KEYSTROKE = 4;

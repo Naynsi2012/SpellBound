@@ -16,6 +16,7 @@ export async function loadEnemySprites(basePath = "/src/assets/sprites/") {
   const ENEMY_FILES = {
     ghost: "enemy_0.png",
     cyclops: "enemy_1.png",
+    dummy: "dummy/dummy.png"
   };
 
   const entries = await Promise.all(

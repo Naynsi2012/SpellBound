@@ -29,6 +29,9 @@ export class Enemy {
         this.paralyzedTimer = 0;
         this.burnTimer = 0;
         this.burnTickTimer = 0;
+
+        this.deathTimer = 0;
+        this.lastAnimState = null;
     }
 
     isAlive() {
