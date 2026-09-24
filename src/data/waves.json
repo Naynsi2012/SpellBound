@@ -2,11 +2,8 @@
     "waves": [
         {
             "enemies": [
-                { "words": ["fire"], "spriteId": "ghost", "spawnDelay": 0 },
-                { "words": ["water"], "spriteId": "ghost", "spawnDelay": 900 },
-                { "words": ["wind"], "spriteId": "ghost", "spawnDelay": 1800 },
-                { "words": ["storm"], "spriteId": "ghost", "spawnDelay": 2700 },
-                { "words": ["fire", "cream"], "spriteId": "cyclops", "spawnDelay": 4000 }
+                { "words": ["fire", "summon", "hybrid"], "spriteId": "soldier", "spawnDelay": 0 },
+                { "words": ["dragon", "cream", "pokemon"], "spriteId": "slime", "spawnDelay": 1000 }
             ]
         },
         {

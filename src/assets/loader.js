@@ -14,9 +14,9 @@ export async function loadTiles() {
 
 export async function loadEnemySprites(basePath = "/src/assets/sprites/") {
   const ENEMY_FILES = {
-    ghost: "enemy_0.png",
-    cyclops: "enemy_1.png",
-    dummy: "dummy/dummy.png"
+    dummy: "dummy/dummy.png",
+    soldier: "soldier/soldier.png",
+    slime: "slime/slime.png"
   };
 
   const entries = await Promise.all(

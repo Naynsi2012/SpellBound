@@ -20,19 +20,26 @@ const SPELL_LABELS = {
     paralyze: "Paralyze",
 };
 
-// Add real sprite-sheet animation configs here when needed.
 const ANIMATIONS = {
-    // ghost: {
-    //     walk:   { frames: 4, frameDuration: 150 },
-    //     attack: { frames: 3, frameDuration: 120 },
-    //     hit:    { frames: 1, frameDuration: 240 },
-    //     death:  { frames: 4, frameDuration: 150 }
-    // }
     dummy: {
         frameSize: 32,
         idle: { row: 0, frames: 4, frameDuration: 180 },
         hurt: { row: 1, frames: 5, frameDuration: 90 },
-        death: { row: 2, frames: 8, frameDuration: 90 }
+        death: { row: 2, frames: 8, frameDuration: 150 }
+    },
+    soldier: {
+        frameSize: 96,
+        walk: { row: 1, frames: 8, frameDuration: 90 },
+        hurt: { row: 6, frames: 4, frameDuration: 90 },
+        attack: { row: 5, frames: 8, frameDuration: 90 },
+        death: { row: 7, frames: 10, frameDuration: 150 },
+    },
+    slime: {
+        frameSize: 96,
+        walk: { row: 1, frames: 8, frameDuration: 90 },
+        hurt: { row: 6, frames: 4, frameDuration: 90 },
+        attack: { row: 4, frames: 8, frameDuration: 90 },
+        death: { row: 7, frames: 10, frameDuration: 150 },
     }
 };
 
@@ -297,7 +304,10 @@ export class Renderer {
             const img = this.enemySprites[enemy.spriteId];
             if (!img) continue;
 
-            const height = img.height * ENEMY_SCALE;
+            const animConfig = ANIMATIONS[enemy.spriteId];
+            const frameSize = animConfig?.frameSize ?? img.height;
+
+            const height = frameSize * ENEMY_SCALE;
             const enemyTopY = enemy.y - height / 2;
 
             const centerX = Math.round(enemy.x);
