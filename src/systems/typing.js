@@ -1,107 +1,158 @@
-import { getLockedEnemy, setLockedEnemy, clearLockedEnemy, pickLockedTarget } from "./targeting.js";
+import {
+    getLockedEnemy,
+    setLockedEnemy,
+    clearLockedEnemy,
+    pickLockedTarget
+} from "./targeting.js";
+
 import { resolveWordComplete } from "./combat.js";
 import { trySpendMana, triggerFizzleCooldown } from "./mana.js";
 import { registerHit, registerMistake } from "./penalty.js";
 import { MANA_PER_KEYSTROKE, MANA_FIZZLE_COOLDOWN } from "../core/constants.js";
 
-let buffer = ""
-let matchedSequence = ""
-let awaitingReset = false
+let buffer = "";
+let matchedSequence = "";
+let awaitingReset = false;
 
-export function getTypedBuffer(){
+export function getTypedBuffer() {
     return buffer;
 }
 
-export function getMatchedSequence(){
+export function getMatchedSequence() {
     return matchedSequence;
 }
 
-export function isAwaitingReset(){
+export function isAwaitingReset() {
     return awaitingReset;
 }
 
-export function clearTypedBuffer(){
+export function clearTypedBuffer() {
     buffer = "";
     matchedSequence = "";
     awaitingReset = false;
+
     clearLockedEnemy();
 }
 
-export function interruptCast(){
+export function interruptCast() {
     if (!getLockedEnemy()) return;
+
     clearTypedBuffer();
     registerMistake();
 }
 
-export function handleKeyDown(e, enemies, path, trainingMode = false){
-    if (e.key === "Backspace"){
-        buffer = buffer.slice(0, -1)
-        matchedSequence = recomputeMatch(buffer)
-        awaitingReset = false
-        return
-    }
+export function handleKeyDown(e, enemies, path, trainingMode = false) {
+    if (e.key === "Backspace") {
+        if (buffer.length === 0) return;
+        buffer = buffer.slice(0, -1);
 
-    if (e.key.length !== 1) return;
+        const target = getLockedEnemy();
 
-    const key = e.key.toLowerCase();
+        if (target && target.isAlive()) {
+            matchedSequence = recomputeMatch(
+                buffer,
+                target.getCurrentWord()
+            );
+        } else {
+            matchedSequence = "";
+        }
 
-    if (awaitingReset){
-        buffer += key;
+        awaitingReset = buffer.length > 0 && matchedSequence !== buffer;
         return;
     }
 
-    if (!trainingMode){
-        if (!trySpendMana(MANA_PER_KEYSTROKE)){
+    if (e.key.length !== 1) return;
+    const key = e.key.toLowerCase();
+
+    if (!trainingMode) {
+        if (!trySpendMana(MANA_PER_KEYSTROKE)) {
             triggerFizzleCooldown(MANA_FIZZLE_COOLDOWN);
             clearTypedBuffer();
             return;
         }
     }
+    
+    let target = getLockedEnemy();
+
+    if (
+        !target ||
+        !enemies.includes(target) ||
+        !target.isAlive()
+    ) {
+        target = pickLockedTarget(key, enemies, path);
+        buffer += key;
+
+        setLockedEnemy(target);
+
+        if (target) {
+            matchedSequence = recomputeMatch(
+                buffer,
+                target.getCurrentWord()
+            );
+        } else {
+            matchedSequence = "";
+        }
+
+        const matchedSomething = matchedSequence === buffer;
+        awaitingReset = !matchedSomething;
+
+        if (!trainingMode) {
+            if (matchedSomething) {
+                registerHit();
+            } else {
+                registerMistake();
+            }
+        }
+
+        return;
+    }
 
     buffer += key;
+    matchedSequence = recomputeMatch(
+        buffer,
+        target.getCurrentWord()
+    );
 
-    let target = getLockedEnemy();
-    let matchedSomething = false;
-    const hadProgress = matchedSequence.length > 0;
+    const matchedSomething = matchedSequence === buffer;
+    awaitingReset = !matchedSomething;
 
-    if (!target || !enemies.includes(target) || !target.isAlive()){
-        target = pickLockedTarget(key, enemies, path);
-        setLockedEnemy(target);
-        matchedSequence = target ? key : "";
-        matchedSomething = !!target;
-    } else{
-        const word = target.getCurrentWord().toLowerCase();
-        const attempt = matchedSequence + key;
-
-        if (word.startsWith(attempt)){
-            matchedSequence = attempt;
-            matchedSomething = true;
-        } else{
-            clearLockedEnemy();
-            matchedSequence = "";
+    if (!trainingMode) {
+        if (matchedSomething) {
+            registerHit();
+        } else {
+            registerMistake();
         }
     }
 
-    if (!trainingMode){
-        if (matchedSomething) registerHit();
-        else registerMistake();
-    }
-
-    if (!matchedSomething && hadProgress) awaitingReset = true;
-
     target = getLockedEnemy();
-    if (target && matchedSequence === target.getCurrentWord().toLowerCase()){
+
+    if (
+        target &&
+        matchedSequence === target.getCurrentWord().toLowerCase() &&
+        buffer === target.getCurrentWord().toLowerCase()
+    ) {
         resolveWordComplete(target);
+
         buffer = "";
-        matchedSequence = ""
-        clearLockedEnemy();
+        matchedSequence = "";
         awaitingReset = false;
+
+        clearLockedEnemy();
     }
 }
 
-function recomputeMatch(buffer){
-    const target = getLockedEnemy();
-    if (!target) return "";
-    const word = target.getCurrentWord().toLowerCase();
-    return word.startsWith(buffer) ? buffer : "";
+function recomputeMatch(buffer, word) {
+    if (!word) return "";
+    let matched = 0;
+
+    while (
+        matched < buffer.length &&
+        matched < word.length &&
+        buffer[matched].toLowerCase() ===
+            word[matched].toLowerCase()
+    ) {
+        matched++;
+    }
+
+    return word.slice(0, matched);
 }
