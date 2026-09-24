@@ -32,7 +32,7 @@ export class Renderer {
     render(options){
         const { map, enemies, typedBuffer, matchedSequence, lockedEnemy,
                 platform, state, mana, maxMana, combo, activeSpell,
-                menuOptions, selectedIndex, trainingMode 
+                menuOptions, selectedIndex, trainingMode, waveNumber, waveCount 
             } = options;
 
         this.clear();
@@ -57,6 +57,8 @@ export class Renderer {
 
         if (state === "ready") this.drawReadyScreen();
         if (state === "gameover") this.drawGameOverScreen();
+        if (state === "waveComplete") this.drawWaveCompleteScreen(waveNumber, waveCount);
+        if (state === "victory") this.drawVictoryScreen();
 
     }
 
@@ -160,8 +162,10 @@ export class Renderer {
             const y = enemy.y - height / 2;
 
             this.ctx.drawImage(img, x, y, width, height);
-            this.drawEnemyHealthBar(enemy, Math.round(enemy.x), Math.round(enemy.y));
-            this.drawStatusIcons(enemy, Math.round(enemy.x), Math.round(enemy.y));
+
+            const barRect = this.getHealthBarRect(Math.round(enemy.x), Math.round(y));
+            this.drawEnemyHealthBar(enemy, barRect);
+            this.drawStatusIcons(enemy, barRect);
         }
 
         for (const enemy of visible) {
@@ -175,27 +179,29 @@ export class Renderer {
         }
     }
 
-    drawEnemyHealthBar(enemy, centerX, enemyTopY) {
-        const barWidth = 30;
-        const barHeight = 4;
+    getHealthBarRect(centerX, enemyTopY) {
+        const width = 30;
+        const height = 4;
+        const x = Math.round(centerX - width / 2);
+        const y = Math.round(enemyTopY - 5);
+        return { x, y, width, height };
+    }
 
-        const x = Math.round(centerX - barWidth / 2);
-        const y = Math.round(enemyTopY - 6);
-
+    drawEnemyHealthBar(enemy, rect) {
         const healthRatio = Math.max(0, Math.min(1, enemy.health / enemy.maxHealth));
 
         this.ctx.fillStyle = "#171717";
-        this.ctx.fillRect(x, y, barWidth, barHeight);
+        this.ctx.fillRect(rect.x, rect.y, rect.width, rect.height);
 
         this.ctx.fillStyle = "#65d85a";
-        this.ctx.fillRect(x + 1, y + 1, Math.round((barWidth - 2) * healthRatio), barHeight - 2);
+        this.ctx.fillRect(rect.x + 1, rect.y + 1, Math.round((rect.width - 2) * healthRatio), rect.height - 2);
 
         this.ctx.strokeStyle = "#000";
         this.ctx.lineWidth = 1;
-        this.ctx.strokeRect(x + 0.5, y + 0.5, barWidth - 1, barHeight - 1);
+        this.ctx.strokeRect(rect.x + 0.5, rect.y + 0.5, rect.width - 1, rect.height - 1);
     }
 
-    drawStatusIcons(enemy, centerX, enemyTopY){
+    drawStatusIcons(enemy, rect) {
         const dots = [];
 
         if (enemy.slowTimer > 0) dots.push(SPELL_COLORS.slow);
@@ -205,17 +211,16 @@ export class Renderer {
         if (dots.length === 0) return;
 
         const radius = 2.5;
-        const spacing = 7;
-        const totalWidth = (dots.length - 1) * spacing;
-        const startX = centerX - totalWidth / 2;
-        const y = enemyTopY - 12;
+        const gap = 3;
+        const startX = rect.x + rect.width + gap + radius; 
+        const y = rect.y + rect.height / 2; 
 
         dots.forEach((color, i) => {
             this.ctx.beginPath();
-            this.ctx.arc(startX + i * spacing, y, radius, 0, Math.PI * 2);
+            this.ctx.arc(startX + i * (radius * 2 + gap), y, radius, 0, Math.PI * 2);
             this.ctx.fillStyle = color;
             this.ctx.fill();
-        })
+        });
     }
 
     drawEnemyWord(enemy, matchedSequence, centerX, enemyTopY, isLocked) {
@@ -235,9 +240,12 @@ export class Renderer {
         const bubbleWidth = Math.ceil(textWidth + paddingX * 2);
         const bubbleHeight = 18;
 
+        const barRect = this.getHealthBarRect(centerX, enemyTopY);
+        const margin = 6;
+
         const bubbleCenterX = Math.round(centerX);
         const bubbleX = Math.round(bubbleCenterX - bubbleWidth / 2);
-        const bubbleY = Math.round(enemyTopY - 30);
+        let bubbleY = barRect.y - bubbleHeight - margin;
 
         this.ctx.fillStyle = "#252525";
         this.ctx.fillRect(bubbleX, bubbleY, bubbleWidth, bubbleHeight);
@@ -359,6 +367,14 @@ export class Renderer {
 
     drawGameOverScreen() {
         this.drawOverlay("Game Over - Press ENTER to restart");
+    }
+
+    drawWaveCompleteScreen(waveNumber, waveCount) {
+        this.drawOverlay(`Wave ${waveNumber} cleared! Press ENTER for wave ${waveNumber + 1}/${waveCount}`)
+    }
+
+    drawVictoryScreen() {
+        this.drawOverlay("Victory! All waves cleared — Press ENTER to return to menu");
     }
 
     drawOverlay(promptText) {

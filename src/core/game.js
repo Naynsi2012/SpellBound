@@ -15,7 +15,7 @@ import { getCombo, resetCombo } from "../systems/penalty.js"
 import { cycleSpell, getActiveSpell, resetActiveSpell } from "../systems/spells.js"
 import { updateStatusEffects } from "../systems/statusEffects.js"
 import { getMenuOptions, getSelectedIndex, moveSelection, getSelectedOption, resetSelection } from "../systems/menu.js"
-import { resetWaves, startWave, updateWaveSpawning, isWaveSpawningComplete, hasNextWave, advanceToNextWave } from "../systems/waves.js"
+import { resetWaves, startWave, updateWaveSpawning, isWaveSpawningComplete, hasNextWave, advanceToNextWave, getCurrentWaveNumber, getWaveCount } from "../systems/waves.js"
 import { createScarecrow, getScarecrowPositions } from "../systems/scarecrows.js"
 
 import spawnMapData from "../data/maps/spawn.json"
@@ -122,6 +122,17 @@ export class Game {
 
             handleKeyDown(e, this.enemies, this.map.path, this.trainingMode);
         }
+        if (this.state === "waveComplete" && e.key === "Enter"){
+            advanceToNextWave();
+            startWave(this.map.path.points[0]);
+            this.state = "playing";
+            return;
+        }
+        if (this.state === "victory" && e.key === "Enter"){
+            this.state = "menu";
+            resetSelection();
+            return;
+        }
     }
 
     createPlatform(){
@@ -194,8 +205,7 @@ export class Game {
             this.refillTrainingTargets();
         } else if (isWaveSpawningComplete() && this.enemies.length === 0){
             if (hasNextWave()){
-                advanceToNextWave();
-                startWave(this.map.path.points[0]);
+                this.state = "waveComplete";
             } else{
                 this.state = "victory";
             }
@@ -219,7 +229,9 @@ export class Game {
             activeSpell: getActiveSpell(),
             menuOptions: getMenuOptions(),
             selectedIndex: getSelectedIndex(),
-            trainingMode: this.trainingMode
+            trainingMode: this.trainingMode,
+            waveNumber: getCurrentWaveNumber(),
+            waveCount: getWaveCount()
         })
     }
 }
