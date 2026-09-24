@@ -16,13 +16,23 @@ export function pruneLockedEnemy(enemies){
     if (lockedEnemy && !enemies.includes(lockedEnemy)) lockedEnemy = null;
 }
 
-export function pickLockedTarget(key, enemies){
+export function pickLockedTarget(key, enemies, path){
     const candidates = enemies.filter((enemy) => enemy.isAlive() && enemy.getCurrentWord().toLowerCase().startsWith(key))
     if (candidates.length === 0) return null;
 
-    return candidates.reduce((closest, enemy) => pathProgressOf(enemy) > pathProgressOf(closest) ? enemy : closest)
+    return candidates.reduce((closest, enemy) =>
+        getPathDistance(enemy, path) > getPathDistance(closest, path) ? enemy : closest
+    )
 }
 
-function pathProgressOf(enemy){
-    return enemy.pathIndex + enemy.pathProgress;
+function getPathDistance(enemy, path){
+    let distance = 0;
+
+    for (let i = 0; i < enemy.pathIndex; i++){
+        const a = path.points[i];
+        const b = path.points[i + 1];
+        distance += Math.hypot(b.x - a.x, b.y - a.y);
+    }
+
+    return distance + enemy.pathProgress;
 }

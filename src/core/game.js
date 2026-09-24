@@ -11,7 +11,7 @@ import { getLockedEnemy, pruneLockedEnemy } from "../systems/targeting.js"
 import { updatePlatformAttack } from "../systems/platform.js"
 import { Platform } from "../entities/platform.js"
 import { updateMana, getMana, getMaxMana, resetMana } from "../systems/mana.js"
-import { getCombo, resetCombo } from "../systems/penalty.js" 
+import { getCombo, resetCombo } from "../systems/penalty.js"
 import { cycleSpell, getActiveSpell, resetActiveSpell } from "../systems/spells.js"
 import { updateStatusEffects } from "../systems/statusEffects.js"
 import { getMenuOptions, getSelectedIndex, moveSelection, getSelectedOption, resetSelection } from "../systems/menu.js"
@@ -22,7 +22,7 @@ import spawnMapData from "../data/maps/spawn.json"
 import trainingMapData from "../data/maps/training.json"
 
 const MAPS = {
-    spawn: spawnMapData, 
+    spawn: spawnMapData,
     training: trainingMapData
 }
 
@@ -37,11 +37,9 @@ export class Game {
         this.canvas.width = CANVAS_WIDTH
         this.canvas.height = CANVAS_HEIGHT
 
-        // Load assets
         const tiles = await loadTiles();
         const enemySprites = await loadEnemySprites();
 
-        // Create renderer
         this.renderer = new Renderer(this.canvas, this.ctx, tiles, enemySprites)
 
         this.state = "menu";
@@ -87,7 +85,7 @@ export class Game {
             const occupied = new Set(this.enemies.map((e) => `${e.x},${e.y}`));
             const freeSpot = this.trainingPositions.find((pos) => !occupied.has(`${pos.x},${pos.y}`))
             if (!freeSpot) break;
-            
+
             this.enemies.push(createScarecrow(freeSpot));
         }
     }
@@ -113,6 +111,17 @@ export class Game {
             resetSelection();
             return;
         }
+        if (this.state === "victory" && e.key === "Enter"){
+            this.state = "menu";
+            resetSelection();
+            return;
+        }
+        if (this.state === "waveComplete" && e.key === "Enter"){
+            advanceToNextWave();
+            startWave(this.map.path.points[0]);
+            this.state = "playing";
+            return;
+        }
         if (this.state === "playing"){
             if (e.key === "Tab"){
                 e.preventDefault();
@@ -121,17 +130,6 @@ export class Game {
             }
 
             handleKeyDown(e, this.enemies, this.map.path, this.trainingMode);
-        }
-        if (this.state === "waveComplete" && e.key === "Enter"){
-            advanceToNextWave();
-            startWave(this.map.path.points[0]);
-            this.state = "playing";
-            return;
-        }
-        if (this.state === "victory" && e.key === "Enter"){
-            this.state = "menu";
-            resetSelection();
-            return;
         }
     }
 
@@ -194,7 +192,6 @@ export class Game {
         const locked = getLockedEnemy();
         if (locked && locked.reachedEnd) interruptCast();
 
-        // Remove enemies that were killed by typing
         this.enemies = this.enemies.filter((enemy) => {
             if(!enemy.isAlive() && enemy.flashTimer <= 0) return false
             return true

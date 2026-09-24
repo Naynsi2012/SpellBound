@@ -1,27 +1,31 @@
-import { BACKLASH_BASE_COST, COMBO_SUPPRESS_THRESHOLD, COMBO_SUPPRESS_MS } from "../core/constants.js"
-import { sendManaDirect, suppressRegen } from "./mana.js"
+import {
+    BACKLASH_BASE_COST,
+    COMBO_SUPPRESS_THRESHOLD,
+    COMBO_SUPPRESS_MS
+} from "../core/constants.js";
+import { spendManaDirect, suppressRegen } from "./mana.js";
 
 let combo = 0;
 
-export function getCombo(){
+export function getCombo() {
     return combo;
 }
 
-export function resetCombo(){
+export function resetCombo() {
     combo = 0;
 }
 
-export function registerHit(){
+export function registerHit() {
     combo++;
 }
 
-export function registerMistake(){
+export function registerMistake() {
     const tier = Math.floor(combo / 5);
     const backlash = BACKLASH_BASE_COST + tier * BACKLASH_BASE_COST;
 
-    sendManaDirect(backlash);
+    spendManaDirect(backlash);
 
-    if (combo >= COMBO_SUPPRESS_THRESHOLD){
+    if (combo >= COMBO_SUPPRESS_THRESHOLD) {
         suppressRegen(COMBO_SUPPRESS_MS);
     }
 

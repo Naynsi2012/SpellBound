@@ -1,5 +1,6 @@
 import { TILE_SIZE } from "../core/constants.js";
 import { PREFABS, getPrefabSize } from "../map/prefabs.js";
+import { getAnimState } from "../entities/animation.js";
 
 const OBJECT_SCALE = 2;
 const ENEMY_SCALE = 2;
@@ -10,7 +11,6 @@ const SPELL_COLORS = {
     slow: "#4fa8e0",
     burn: "#e0703f",
     paralyze: "#e0dd4f",
-    // paralyze: "#b04fe0",
 }
 
 const SPELL_LABELS = {
@@ -19,6 +19,18 @@ const SPELL_LABELS = {
     burn: "Burn",
     paralyze: "Paralyze"
 }
+
+// Fill this in once you have real sprite sheets — one entry per
+// spriteId, with frame count + speed per animation state. Until an
+// entry exists here, enemies just draw as a single static image.
+const ANIMATIONS = {
+    // ghost: {
+    //     walk:   { frames: 4, frameDuration: 150 },
+    //     attack: { frames: 3, frameDuration: 120 },
+    //     hit:    { frames: 1, frameDuration: 240 },
+    //     death:  { frames: 4, frameDuration: 150 }
+    // }
+};
 
 export class Renderer {
     constructor(canvas, ctx, tiles, enemySprites) {
@@ -32,7 +44,7 @@ export class Renderer {
     render(options){
         const { map, enemies, typedBuffer, matchedSequence, lockedEnemy,
                 platform, state, mana, maxMana, combo, activeSpell,
-                menuOptions, selectedIndex, trainingMode, waveNumber, waveCount 
+                menuOptions, selectedIndex, trainingMode, waveNumber, waveCount
             } = options;
 
         this.clear();
@@ -54,12 +66,12 @@ export class Renderer {
         }
 
         this.drawSpellIndicator(activeSpell);
+        if (!trainingMode) this.drawBaseHudBar(platform);
 
         if (state === "ready") this.drawReadyScreen();
         if (state === "gameover") this.drawGameOverScreen();
-        if (state === "waveComplete") this.drawWaveCompleteScreen(waveNumber, waveCount);
         if (state === "victory") this.drawVictoryScreen();
-
+        if (state === "waveComplete") this.drawWaveCompleteScreen(waveNumber, waveCount);
     }
 
     clear() {
@@ -161,12 +173,14 @@ export class Renderer {
             const x = enemy.x - width / 2;
             const y = enemy.y - height / 2;
 
-            this.ctx.drawImage(img, x, y, width, height);
+            this.drawEnemySprite(enemy, img, x, y, width, height);
 
             const barRect = this.getHealthBarRect(Math.round(enemy.x), Math.round(y));
             this.drawEnemyHealthBar(enemy, barRect);
             this.drawStatusIcons(enemy, barRect);
         }
+
+        const placedBubbles = [];
 
         for (const enemy of visible) {
             const img = this.enemySprites[enemy.spriteId];
@@ -175,7 +189,20 @@ export class Renderer {
             const height = img.height * ENEMY_SCALE;
             const y = enemy.y - height / 2;
 
-            this.drawEnemyWord(enemy, matchedSequence, Math.round(enemy.x), Math.round(y), enemy === lockedEnemy);
+            this.drawEnemyWord(enemy, matchedSequence, Math.round(enemy.x), Math.round(y), enemy === lockedEnemy, placedBubbles);
+        }
+    }
+
+    drawEnemySprite(enemy, img, x, y, width, height) {
+        const animState = getAnimState(enemy);
+        const animConfig = ANIMATIONS[enemy.spriteId]?.[animState];
+
+        if (animConfig) {
+            const frameIndex = Math.floor(enemy.animTimer / animConfig.frameDuration) % animConfig.frames;
+            const frameWidth = img.width / animConfig.frames;
+            this.ctx.drawImage(img, frameIndex * frameWidth, 0, frameWidth, img.height, x, y, width, height);
+        } else {
+            this.ctx.drawImage(img, x, y, width, height);
         }
     }
 
@@ -183,7 +210,7 @@ export class Renderer {
         const width = 30;
         const height = 4;
         const x = Math.round(centerX - width / 2);
-        const y = Math.round(enemyTopY - 5);
+        const y = Math.round(enemyTopY - 10);
         return { x, y, width, height };
     }
 
@@ -212,18 +239,18 @@ export class Renderer {
 
         const radius = 2.5;
         const gap = 3;
-        const startX = rect.x + rect.width + gap + radius; 
-        const y = rect.y + rect.height / 2; 
+        const startX = rect.x + rect.width + gap + radius;
+        const y = rect.y + rect.height / 2;
 
         dots.forEach((color, i) => {
             this.ctx.beginPath();
             this.ctx.arc(startX + i * (radius * 2 + gap), y, radius, 0, Math.PI * 2);
             this.ctx.fillStyle = color;
             this.ctx.fill();
-        });
+        })
     }
 
-    drawEnemyWord(enemy, matchedSequence, centerX, enemyTopY, isLocked) {
+    drawEnemyWord(enemy, matchedSequence, centerX, enemyTopY, isLocked, placedBubbles) {
         const word = enemy.getCurrentWord();
         const matched = isLocked ? matchedPrefixLength(matchedSequence, word) : 0;
 
@@ -241,11 +268,19 @@ export class Renderer {
         const bubbleHeight = 18;
 
         const barRect = this.getHealthBarRect(centerX, enemyTopY);
-        const margin = 6;
+        const margin = 4;
 
         const bubbleCenterX = Math.round(centerX);
         const bubbleX = Math.round(bubbleCenterX - bubbleWidth / 2);
         let bubbleY = barRect.y - bubbleHeight - margin;
+
+        let attempts = 0;
+        while (attempts < 20 && overlapsAny(bubbleX, bubbleY, bubbleWidth, bubbleHeight, placedBubbles)) {
+            bubbleY -= bubbleHeight + 4;
+            attempts++;
+        }
+
+        placedBubbles.push({ x: bubbleX, y: bubbleY, width: bubbleWidth, height: bubbleHeight });
 
         this.ctx.fillStyle = "#252525";
         this.ctx.fillRect(bubbleX, bubbleY, bubbleWidth, bubbleHeight);
@@ -344,21 +379,46 @@ export class Renderer {
     }
 
     drawPlatformHealthBar(platform, x, y, width) {
-        const barWidth = width;
-        const barHeight = 8;
-        const barY = y - barHeight - 6;
-
+        const barHeight = 10;
+        const barY = y - barHeight - 8;
         const ratio = Math.max(0, platform.health / platform.maxHealth);
 
-        this.ctx.fillStyle = "#171717";
-        this.ctx.fillRect(x, barY, barWidth, barHeight);
+        this.ctx.fillStyle = "#0a0a0a";
+        this.ctx.fillRect(x - 2, barY - 2, width + 4, barHeight + 4);
 
-        this.ctx.fillStyle = "#e05a4e";
-        this.ctx.fillRect(x + 1, barY + 1, (barWidth - 2) * ratio, barHeight - 2);
+        this.ctx.fillStyle = "#3a1a1a";
+        this.ctx.fillRect(x, barY, width, barHeight);
 
-        this.ctx.strokeStyle = "#000000";
-        this.ctx.lineWidth = 1;
-        this.ctx.strokeRect(x + 0.5, barY + 0.5, barWidth - 1, barHeight - 1);
+        const fillWidth = (width - 2) * ratio;
+        this.ctx.fillStyle = "#c0392b";
+        this.ctx.fillRect(x + 1, barY + barHeight / 2, fillWidth, barHeight / 2 - 1);
+        this.ctx.fillStyle = "#e74c3c";
+        this.ctx.fillRect(x + 1, barY + 1, fillWidth, barHeight / 2 - 1);
+
+        this.ctx.strokeStyle = "#d4af37";
+        this.ctx.lineWidth = 1.5;
+        this.ctx.strokeRect(x + 0.5, barY + 0.5, width - 1, barHeight - 1);
+    }
+
+    drawBaseHudBar(platform) {
+        const width = 200, height = 16;
+        const x = (this.canvas.width - width) / 2, y = 10;
+        const ratio = Math.max(0, platform.health / platform.maxHealth);
+
+        this.ctx.font = "bold 10px monospace";
+        this.ctx.textAlign = "center";
+        this.ctx.fillStyle = "#d4af37";
+        this.ctx.fillText("KEEP", x + width / 2, y - 4);
+
+        this.ctx.fillStyle = "#3a1a1a";
+        this.ctx.fillRect(x, y, width, height);
+
+        this.ctx.fillStyle = "#e74c3c";
+        this.ctx.fillRect(x + 1, y + 1, (width - 2) * ratio, height - 2);
+
+        this.ctx.strokeStyle = "#d4af37";
+        this.ctx.lineWidth = 2;
+        this.ctx.strokeRect(x, y, width, height);
     }
 
     drawReadyScreen() {
@@ -369,12 +429,12 @@ export class Renderer {
         this.drawOverlay("Game Over - Press ENTER to restart");
     }
 
-    drawWaveCompleteScreen(waveNumber, waveCount) {
-        this.drawOverlay(`Wave ${waveNumber} cleared! Press ENTER for wave ${waveNumber + 1}/${waveCount}`)
+    drawVictoryScreen() {
+        this.drawOverlay("Victory! All waves cleared - Press ENTER to return to menu");
     }
 
-    drawVictoryScreen() {
-        this.drawOverlay("Victory! All waves cleared — Press ENTER to return to menu");
+    drawWaveCompleteScreen(waveNumber, waveCount) {
+        this.drawOverlay(`Wave ${waveNumber} cleared! Press ENTER for wave ${waveNumber + 1}/${waveCount}`)
     }
 
     drawOverlay(promptText) {
@@ -399,4 +459,13 @@ function matchedPrefixLength(buffer, word) {
 function isFlickering(enemy) {
     if (enemy.flashTimer <= 0) return false;
     return Math.floor(enemy.flashTimer / 60) % 2 === 0;
+}
+
+function overlapsAny(x, y, width, height, rects) {
+    return rects.some((r) =>
+        x < r.x + r.width &&
+        x + width > r.x &&
+        y < r.y + r.height &&
+        y + height > r.y
+    );
 }

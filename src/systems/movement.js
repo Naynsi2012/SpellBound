@@ -1,4 +1,4 @@
-import { getEffectiveSpeed } from "./statusEffects.js"
+import { getEffectiveSpeed } from "./statusEffects.js";
 
 export function updateEnemyPositions(enemies, path, deltaTime){
     const deltaSeconds = deltaTime / 1000;
@@ -7,6 +7,27 @@ export function updateEnemyPositions(enemies, path, deltaTime){
         if (!enemy.isAlive()) continue
 
         let distance = getEffectiveSpeed(enemy) * deltaSeconds;
+
+        // pathIndex -1 means the enemy is still walking in from
+        // off-screen toward the path's actual start point
+        if (enemy.pathIndex === -1){
+            const target = path.points[0];
+            const dx = target.x - enemy.x;
+            const dy = target.y - enemy.y;
+            const remaining = Math.hypot(dx, dy);
+
+            if (distance >= remaining){
+                enemy.x = target.x;
+                enemy.y = target.y;
+                enemy.pathIndex = 0;
+                distance -= remaining;
+            } else{
+                const t = remaining === 0 ? 0 : distance / remaining;
+                enemy.x += dx * t;
+                enemy.y += dy * t;
+                continue;
+            }
+        }
 
         while (distance > 0 && enemy.pathIndex < path.points.length - 1) {
             const current = path.points[enemy.pathIndex];

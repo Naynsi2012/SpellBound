@@ -32,13 +32,13 @@ export function updateMana(deltaTime){
     mana = Math.min(MANA_MAX, mana + (MANA_REGEN_PER_SECOND * deltaTime) / 1000);
 }
 
-export function trySendMana(amount){
+export function trySpendMana(amount){
     if (castCooldownTimer > 0 || mana < amount) return false;
     mana -= amount;
     return true;
 }
 
-export function sendManaDirect(amount){
+export function spendManaDirect(amount){
     mana = Math.max(0, mana - amount);
 }
 

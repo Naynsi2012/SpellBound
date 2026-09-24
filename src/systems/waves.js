@@ -1,5 +1,6 @@
 import wavesData from "../data/waves.json"
 import { Enemy } from "../entities/enemy.js"
+import { ENEMY_ENTRY_X } from "../core/constants.js"
 
 const BASE_HEALTH = 100;
 const BASE_SPEED = 40;
@@ -48,13 +49,13 @@ export function updateWaveSpawning(deltaTime, pathStartPoint){
         const speed = enemy.isBoss ? BASE_SPEED * BOSS_SPEED_MULTIPLIER : BASE_SPEED;
 
         toSpawn.push(new Enemy({
-            x: pathStartPoint.x,
+            x: ENEMY_ENTRY_X,
             y: pathStartPoint.y,
             words: enemy.words,
             maxHealth: health,
             speed,
             spriteId: enemy.spriteId,
-            pathIndex: 0
+            pathIndex: -1
         }))
     }
 

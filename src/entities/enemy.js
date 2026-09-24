@@ -12,7 +12,6 @@ export class Enemy {
         this.speed = speed;
         this.spriteId = spriteId;
 
-        // Path movement state
         this.pathIndex = pathIndex;
         this.pathProgress = 0;
 
@@ -24,6 +23,7 @@ export class Enemy {
 
         this.damagePerWord = maxHealth / words.length;
         this.flashTimer = 0;
+        this.animTimer = 0;
 
         this.slowTimer = 0;
         this.paralyzedTimer = 0;

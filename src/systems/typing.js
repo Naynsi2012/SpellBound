@@ -1,6 +1,6 @@
 import { getLockedEnemy, setLockedEnemy, clearLockedEnemy, pickLockedTarget } from "./targeting.js";
 import { resolveWordComplete } from "./combat.js";
-import { trySendMana, triggerFizzleCooldown } from "./mana.js";
+import { trySpendMana, triggerFizzleCooldown } from "./mana.js";
 import { registerHit, registerMistake } from "./penalty.js";
 import { MANA_PER_KEYSTROKE, MANA_FIZZLE_COOLDOWN } from "../core/constants.js";
 
@@ -16,7 +16,7 @@ export function getMatchedSequence(){
     return matchedSequence;
 }
 
-export function isAwaitingSequence(){
+export function isAwaitingReset(){
     return awaitingReset;
 }
 
@@ -45,8 +45,13 @@ export function handleKeyDown(e, enemies, path, trainingMode = false){
 
     const key = e.key.toLowerCase();
 
+    if (awaitingReset){
+        buffer += key;
+        return;
+    }
+
     if (!trainingMode){
-        if (!trySendMana(MANA_PER_KEYSTROKE)){
+        if (!trySpendMana(MANA_PER_KEYSTROKE)){
             triggerFizzleCooldown(MANA_FIZZLE_COOLDOWN);
             clearTypedBuffer();
             return;
@@ -54,8 +59,6 @@ export function handleKeyDown(e, enemies, path, trainingMode = false){
     }
 
     buffer += key;
-
-    if (awaitingReset) return;
 
     let target = getLockedEnemy();
     let matchedSomething = false;
