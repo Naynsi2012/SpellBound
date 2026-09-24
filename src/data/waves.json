@@ -3,12 +3,15 @@
         {
             "enemies": [
                 { "words": ["fire", "summon", "hybrid"], "spriteId": "soldier", "spawnDelay": 0 },
-                { "words": ["dragon", "cream", "pokemon"], "spriteId": "slime", "spawnDelay": 1000 }
+                { "words": ["fire", "summon", "hybrid"], "spriteId": "soldier", "spawnDelay": 2000 },
+                { "words": ["dragon", "cream", "pokemon"], "spriteId": "slime", "spawnDelay": 1000 },
+                { "words": ["dragon", "cream", "pokemon"], "spriteId": "slime", "spawnDelay": 1500 },
+                { "words": ["dragon", "cream", "pokemon"], "spriteId": "slime", "spawnDelay": 2000 }
             ]
         },
         {
             "enemies": [
-                { "words": ["dragon"], "spriteId": "cyclops", "spawnDelay": 0 },
+                { "words": ["dragon"], "spriteId": "soldier", "spawnDelay": 0 },
                 { "words": ["fire", "cream"], "spriteId": "cyclops", "spawnDelay": 1000 },
                 { "words": ["storm"], "spriteId": "ghost", "spawnDelay": 2000 },
                 { "words": ["storm"], "spriteId": "ghost", "spawnDelay": 2800 },

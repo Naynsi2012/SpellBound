@@ -3,7 +3,7 @@ import { PREFABS, getPrefabSize } from "../map/prefabs.js";
 import { getAnimState } from "../entities/animation.js";
 
 const OBJECT_SCALE = 2;
-const ENEMY_SCALE = 2;
+const DEFAULT_ENEMY_SCALE = 2;
 const PLATFORM_SCALE = 2;
 
 const SPELL_COLORS = {
@@ -23,12 +23,14 @@ const SPELL_LABELS = {
 const ANIMATIONS = {
     dummy: {
         frameSize: 32,
+        scale: 2,
         idle: { row: 0, frames: 4, frameDuration: 180 },
         hurt: { row: 1, frames: 5, frameDuration: 90 },
         death: { row: 2, frames: 8, frameDuration: 150 }
     },
     soldier: {
         frameSize: 96,
+        scale: 2,
         walk: { row: 1, frames: 8, frameDuration: 90 },
         hurt: { row: 6, frames: 4, frameDuration: 90 },
         attack: { row: 5, frames: 8, frameDuration: 90 },
@@ -36,6 +38,7 @@ const ANIMATIONS = {
     },
     slime: {
         frameSize: 96,
+        scale: 2,
         walk: { row: 1, frames: 8, frameDuration: 90 },
         hurt: { row: 6, frames: 4, frameDuration: 90 },
         attack: { row: 4, frames: 8, frameDuration: 90 },
@@ -229,13 +232,7 @@ export class Renderer {
             const x = originX + tile.dcol * size;
             const y = originY + tile.drow * size;
 
-            this.ctx.drawImage(
-                img,
-                x,
-                y,
-                size,
-                size
-            );
+            this.ctx.drawImage(img, x, y, size, size);
         }
     }
 
@@ -276,16 +273,17 @@ export class Renderer {
             (enemy) => !isFlickering(enemy)
         );
 
-        // Draw enemy sprites and status UI.
-        for (const enemy of enemies) {
+        // Draw enemy sprites and status UI
+        for (const enemy of visible) {
             const img = this.enemySprites[enemy.spriteId];
             if (!img) continue;
 
             const animConfig = ANIMATIONS[enemy.spriteId];
             const frameSize = animConfig?.frameSize ?? img.width;
 
-            const width = frameSize * ENEMY_SCALE;
-            const height = frameSize * ENEMY_SCALE;
+            const scale = animConfig?.scale ?? DEFAULT_ENEMY_SCALE;
+            const width = frameSize * scale;
+            const height = frameSize * scale;
 
             const x = enemy.x - width / 2;
             const y = enemy.y - height / 2;
@@ -297,7 +295,7 @@ export class Renderer {
             this.drawStatusIcons(enemy, barRect);
         }
 
-        // Draw word bubbles after sprites so they appear above the enemies.
+        // Draw word bubbles after sprites so they appear above the enemies
         const placedBubbles = [];
 
         for (const enemy of visible) {
@@ -307,10 +305,12 @@ export class Renderer {
             const animConfig = ANIMATIONS[enemy.spriteId];
             const frameSize = animConfig?.frameSize ?? img.height;
 
-            const height = frameSize * ENEMY_SCALE;
+            const scale = animConfig?.scale ?? DEFAULT_ENEMY_SCALE;
+            const height = frameSize * scale;
             const enemyTopY = enemy.y - height / 2;
 
             const centerX = Math.round(enemy.x);
+            const barRect = this.getHealthBarRect(centerX, Math.round(enemyTopY));
             const isLocked = enemy === lockedEnemy;
 
             this.drawEnemyWord(
@@ -318,6 +318,7 @@ export class Renderer {
                 matchedSequence,
                 centerX,
                 Math.round(enemyTopY),
+                barRect,
                 isLocked,
                 placedBubbles
             );
@@ -345,16 +346,12 @@ export class Renderer {
     getHealthBarRect(centerX, enemyTopY) {
         const width = 30;
         const height = 4;
+        const gap = 6;
 
         const x = Math.round(centerX - width / 2);
-        const y = Math.round(enemyTopY - 10);
+        const y = Math.round(enemyTopY - gap - height);
 
-        return {
-            x,
-            y,
-            width,
-            height,
-        };
+        return { x, y, width, height, };
     }
 
     drawEnemyHealthBar(enemy, rect) {
@@ -435,7 +432,7 @@ export class Renderer {
         });
     }
 
-    drawEnemyWord(enemy, matchedSequence, centerX, enemyTopY, isLocked, placedBubbles) {
+    drawEnemyWord(enemy, matchedSequence, centerX, enemyTopY, healthBarRect, isLocked, placedBubbles) {
         const word = enemy.getCurrentWord();
         if (!word) return;
 
@@ -457,10 +454,11 @@ export class Renderer {
         const bubbleWidth = Math.max(36, totalWidth + paddingX * 2);
         const bubbleHeight = 30;
 
+        const bubbleGap = 5;
         const bubbleX = Math.round(centerX - bubbleWidth / 2);
-        let bubbleY = Math.round(enemyTopY - bubbleHeight - 8);
+        let bubbleY = Math.round(enemyTopY - bubbleGap - bubbleHeight );
 
-        // Prevent bubbles from sitting directly on top of each other.
+        // Prevent bubbles from sitting directly on top of each other
         let attempts = 0;
 
         while (
@@ -484,7 +482,7 @@ export class Renderer {
             height: bubbleHeight,
         });
 
-        // Bubble background.
+        // Bubble background
         this.ctx.fillStyle = "#252525";
         this.ctx.strokeStyle = isLocked ? "#6dff6d" : "#111111";
         
@@ -501,9 +499,7 @@ export class Renderer {
         this.ctx.fill();
         this.ctx.stroke();
 
-        /*
-         * Speech-bubble pointer.
-         */
+        // Speech-bubble pointer
         this.ctx.fillStyle = "#252525";
         this.ctx.beginPath();
 
@@ -513,15 +509,11 @@ export class Renderer {
 
         this.ctx.fill();
 
-        /*
-         * Draw the actual enemy word.
-         */
+        // Draw the actual enemy word
         let textX = centerX - totalWidth / 2;
         const textY = bubbleY + bubbleHeight / 2;
 
-        /*
-         * Correct prefix.
-         */
+        // Correct prefix
         if (correctPart.length > 0) {
             this.ctx.textAlign = "left";
             this.ctx.fillStyle = "#6dff6d";
@@ -530,12 +522,8 @@ export class Renderer {
             textX += correctWidth;
         }
 
-        /*
-         * Remaining enemy word.
-         *
-         * Incorrect player characters are NOT
-         * inserted here.
-         */
+        // Remaining enemy word
+        // Incorrect player characters are NOT inserted here
         if (remainingPart.length > 0) {
             this.ctx.textAlign = "left";
             this.ctx.fillStyle = "#ffffff";
@@ -568,10 +556,7 @@ export class Renderer {
         this.ctx.font = "16px monospace";
         this.ctx.textBaseline = "middle";
 
-        /*
-         * The input box uses the exact same
-         * correct/wrong split as the enemy bubble.
-         */
+        // The input box uses the exact same correct/wrong split as the enemy bubble
         const typed = buffer || "";
         const matchedLength = matchedSequence ? matchedSequence.length : 0;
 

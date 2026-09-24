@@ -44,17 +44,32 @@ export function interruptCast() {
 export function handleKeyDown(e, enemies, path, trainingMode = false) {
     if (e.key === "Backspace") {
         if (buffer.length === 0) return;
+
         buffer = buffer.slice(0, -1);
+
+        // Completely reset the cast when the player has erased the entire input
+        if (buffer.length === 0) {
+            matchedSequence = "";
+            awaitingReset = false;
+            clearLockedEnemy();
+            return;
+        }
 
         const target = getLockedEnemy();
 
-        if (target && target.isAlive()) {
+        if (
+            target &&
+            enemies.includes(target) &&
+            target.isAlive() &&
+            target.getCurrentWord()
+        ) {
             matchedSequence = recomputeMatch(
                 buffer,
                 target.getCurrentWord()
             );
         } else {
             matchedSequence = "";
+            clearLockedEnemy();
         }
 
         awaitingReset = buffer.length > 0 && matchedSequence !== buffer;
@@ -62,6 +77,7 @@ export function handleKeyDown(e, enemies, path, trainingMode = false) {
     }
 
     if (e.key.length !== 1) return;
+
     const key = e.key.toLowerCase();
 
     if (!trainingMode) {
@@ -71,24 +87,39 @@ export function handleKeyDown(e, enemies, path, trainingMode = false) {
             return;
         }
     }
-    
+
     let target = getLockedEnemy();
 
+    /*
+     * Validate the existing lock.
+     *
+     * A target is only valid if:
+     * - it still exists
+     * - it is alive
+     * - it still has a word
+     */
     if (
-        !target ||
-        !enemies.includes(target) ||
-        !target.isAlive()
+        target &&
+        (
+            !enemies.includes(target) ||
+            !target.isAlive() ||
+            !target.getCurrentWord()
+        )
     ) {
+        clearLockedEnemy();
+        target = null;
+        matchedSequence = "";
+    }
+
+    // No target means this is the beginning of a new cast.
+    if (!target) {
         target = pickLockedTarget(key, enemies, path);
+
         buffer += key;
 
-        setLockedEnemy(target);
-
         if (target) {
-            matchedSequence = recomputeMatch(
-                buffer,
-                target.getCurrentWord()
-            );
+            setLockedEnemy(target);
+            matchedSequence = recomputeMatch(buffer, target.getCurrentWord());
         } else {
             matchedSequence = "";
         }
@@ -107,11 +138,16 @@ export function handleKeyDown(e, enemies, path, trainingMode = false) {
         return;
     }
 
+    /*
+     * We already have a target.
+     *
+     * Do NOT switch targets halfway through a cast.
+     * Incorrect characters remain in the player buffer
+     * and are displayed in red.
+     */
     buffer += key;
-    matchedSequence = recomputeMatch(
-        buffer,
-        target.getCurrentWord()
-    );
+
+    matchedSequence = recomputeMatch(buffer, target.getCurrentWord());
 
     const matchedSomething = matchedSequence === buffer;
     awaitingReset = !matchedSomething;
@@ -124,10 +160,10 @@ export function handleKeyDown(e, enemies, path, trainingMode = false) {
         }
     }
 
-    target = getLockedEnemy();
-
+    // Word completed
     if (
         target &&
+        target.getCurrentWord() &&
         matchedSequence === target.getCurrentWord().toLowerCase() &&
         buffer === target.getCurrentWord().toLowerCase()
     ) {
@@ -148,8 +184,7 @@ function recomputeMatch(buffer, word) {
     while (
         matched < buffer.length &&
         matched < word.length &&
-        buffer[matched].toLowerCase() ===
-            word[matched].toLowerCase()
+        buffer[matched].toLowerCase() === word[matched].toLowerCase()
     ) {
         matched++;
     }
