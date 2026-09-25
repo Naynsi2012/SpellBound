@@ -25,6 +25,10 @@ const ANIMATIONS = {
     frameSize: 32,
     scale: 2,
     visualTopOffset: 10,
+    // Where the visible (non-transparent) bottom of the sprite sits within
+    // the frame, in already-scaled pixels. Used to place UI relative to the
+    // character's actual feet instead of the padded sprite bounding box.
+    visualBottomOffset: 56,
     idle: { row: 0, frames: 4, frameDuration: 180 },
     hurt: { row: 1, frames: 5, frameDuration: 90 },
     death: { row: 2, frames: 8, frameDuration: 150 },
@@ -33,6 +37,7 @@ const ANIMATIONS = {
     frameSize: 96,
     scale: 2,
     visualTopOffset: 80,
+    visualBottomOffset: 120,
     walk: { row: 1, frames: 8, frameDuration: 90 },
     hurt: { row: 6, frames: 4, frameDuration: 90 },
     attack: { row: 5, frames: 8, frameDuration: 90 },
@@ -42,6 +47,7 @@ const ANIMATIONS = {
     frameSize: 96,
     scale: 2,
     visualTopOffset: 90,
+    visualBottomOffset: 120,
     walk: { row: 1, frames: 8, frameDuration: 90 },
     hurt: { row: 6, frames: 4, frameDuration: 90 },
     attack: { row: 4, frames: 8, frameDuration: 90 },
@@ -237,14 +243,20 @@ export class Renderer {
   drawEnemies(enemies, matchedSequence, lockedEnemy) {
     const visible = enemies.filter((enemy) => !isFlickering(enemy));
 
-    // Draw enemy sprites and status UI
+    const placedBubbles = [];
+    const plans = [];
+
+    // Pass 1: work out geometry and where each enemy's health bar / status
+    // icons / word bubble should sit, as one group. A bubble that can't fit
+    // above the enemy (overlap with an already-placed bubble) flips the
+    // whole group - bar, icons and bubble together - below the enemy's feet,
+    // so the bar never gets stranded up top while its bubble is down below.
     for (const enemy of visible) {
       const img = this.enemySprites[enemy.spriteId];
       if (!img) continue;
 
       const animConfig = ANIMATIONS[enemy.spriteId];
       const frameSize = animConfig?.frameSize ?? img.width;
-
       const scale = animConfig?.scale ?? DEFAULT_ENEMY_SCALE;
       const width = frameSize * scale;
       const height = frameSize * scale;
@@ -252,47 +264,105 @@ export class Renderer {
       const x = enemy.x - width / 2;
       const y = enemy.y - height / 2;
 
-      this.drawEnemySprite(enemy, img, x, y, width, height);
-
       const visualTopY = y + (animConfig?.visualTopOffset ?? 0);
-      const barRect = this.getHealthBarRect(
-        Math.round(enemy.x),
+      const visualBottomY = y + (animConfig?.visualBottomOffset ?? height);
+
+      const centerX = Math.round(enemy.x);
+      const aboveBarRect = this.getHealthBarRect(
+        centerX,
         Math.round(visualTopY),
       );
 
-      this.drawEnemyHealthBar(enemy, barRect);
-      this.drawStatusIcons(enemy, barRect);
-    }
-
-    // Draw word bubbles after sprites so they appear above the enemies
-    const placedBubbles = [];
-
-    for (const enemy of visible) {
-      const img = this.enemySprites[enemy.spriteId];
-      if (!img) continue;
-
       // Skip the word bubble entirely while the death animation is playing
-      if (getAnimState(enemy) === "death") continue;
-
-      const animConfig = ANIMATIONS[enemy.spriteId];
-      const frameSize = animConfig?.frameSize ?? img.height;
-
-      const scale = animConfig?.scale ?? DEFAULT_ENEMY_SCALE;
-      const height = frameSize * scale;
-      const enemyTopY =
-        enemy.y - height / 2 + (animConfig?.visualTopOffset ?? 0);
-
-      const centerX = Math.round(enemy.x);
-      const barRect = this.getHealthBarRect(centerX, Math.round(enemyTopY));
       const isLocked = enemy === lockedEnemy;
+      const layout =
+        getAnimState(enemy) === "death"
+          ? null
+          : this.measureWordBubble(enemy, matchedSequence, isLocked);
 
-      this.drawEnemyWord(
+      let barRect = aboveBarRect;
+      let bubblePlan = null;
+
+      if (layout) {
+        const aboveGap = 6;
+        const bubbleX = Math.round(centerX - layout.bubbleWidth / 2);
+        const aboveBubbleY = Math.round(
+          aboveBarRect.y - aboveGap - layout.bubbleHeight,
+        );
+
+        if (
+          !overlapsAny(
+            bubbleX,
+            aboveBubbleY,
+            layout.bubbleWidth,
+            layout.bubbleHeight,
+            placedBubbles,
+          )
+        ) {
+          bubblePlan = { x: bubbleX, y: aboveBubbleY, pointsDown: true };
+          barRect = aboveBarRect;
+        } else {
+          // Flip below: a small gap off the actual feet, then the bar,
+          // then the bubble right under it.
+          const footGap = 4;
+          const barBubbleGap = 6;
+          const belowBarY = Math.round(visualBottomY + footGap);
+
+          barRect = {
+            x: aboveBarRect.x,
+            y: belowBarY,
+            width: aboveBarRect.width,
+            height: aboveBarRect.height,
+          };
+
+          const belowBubbleY = Math.round(
+            belowBarY + barRect.height + barBubbleGap,
+          );
+
+          bubblePlan = { x: bubbleX, y: belowBubbleY, pointsDown: false };
+        }
+
+        placedBubbles.push({
+          x: bubblePlan.x,
+          y: bubblePlan.y,
+          width: layout.bubbleWidth,
+          height: layout.bubbleHeight,
+        });
+      }
+
+      plans.push({
         enemy,
-        matchedSequence,
+        img,
+        x,
+        y,
+        width,
+        height,
         centerX,
         barRect,
+        layout,
+        bubblePlan,
         isLocked,
-        placedBubbles,
+      });
+    }
+
+    // Pass 2: draw sprites, health bars and status icons.
+    for (const plan of plans) {
+      this.drawEnemySprite(plan.enemy, plan.img, plan.x, plan.y, plan.width, plan.height);
+      this.drawEnemyHealthBar(plan.enemy, plan.barRect);
+      this.drawStatusIcons(plan.enemy, plan.barRect);
+    }
+
+    // Pass 3: draw word bubbles on top of everything.
+    for (const plan of plans) {
+      if (!plan.layout || !plan.bubblePlan) continue;
+
+      this.drawWordBubble(
+        plan.layout,
+        plan.bubblePlan.x,
+        plan.bubblePlan.y,
+        plan.bubblePlan.pointsDown,
+        plan.centerX,
+        plan.isLocked,
       );
     }
   }
@@ -397,28 +467,21 @@ export class Renderer {
     });
   }
 
-  drawEnemyWord(
-    enemy,
-    matchedSequence,
-    centerX,
-    healthBarRect,
-    isLocked,
-    placedBubbles,
-  ) {
+  // Measures (but doesn't draw) the word bubble for an enemy, so its size
+  // can be used to decide bubble placement before anything is rendered.
+  measureWordBubble(enemy, matchedSequence, isLocked) {
     const word = enemy.getCurrentWord();
-    if (!word) return;
+    if (!word) return null;
 
     const matchedLength = isLocked ? matchedSequence.length : 0;
     const correctPart = word.slice(0, matchedLength);
     const remainingPart = word.slice(matchedLength);
 
     this.ctx.save();
-
     this.ctx.font = "bold 14px monospace";
-    this.ctx.textBaseline = "middle";
-
     const correctWidth = this.ctx.measureText(correctPart).width;
     const remainingWidth = this.ctx.measureText(remainingPart).width;
+    this.ctx.restore();
 
     const totalWidth = correctWidth + remainingWidth;
     const paddingX = 10;
@@ -426,26 +489,25 @@ export class Renderer {
     const bubbleWidth = Math.max(36, totalWidth + paddingX * 2);
     const bubbleHeight = 26;
 
-    const bubbleGap = 6;
-    const bubbleX = Math.round(centerX - bubbleWidth / 2);
-    let bubbleY = Math.round(healthBarRect.y - bubbleGap - bubbleHeight);
+    return {
+      correctPart,
+      remainingPart,
+      correctWidth,
+      remainingWidth,
+      totalWidth,
+      bubbleWidth,
+      bubbleHeight,
+    };
+  }
 
-    let attempts = 0;
+  drawWordBubble(layout, bubbleX, bubbleY, pointsDown, bubbleCenterX, isLocked) {
+    const { bubbleWidth, bubbleHeight, correctPart, remainingPart, correctWidth, totalWidth } =
+      layout;
 
-    while (
-      attempts < 4 &&
-      overlapsAny(bubbleX, bubbleY, bubbleWidth, bubbleHeight, placedBubbles)
-    ) {
-      bubbleY -= bubbleHeight + 4;
-      attempts++;
-    }
+    this.ctx.save();
 
-    placedBubbles.push({
-      x: bubbleX,
-      y: bubbleY,
-      width: bubbleWidth,
-      height: bubbleHeight,
-    });
+    this.ctx.font = "bold 14px monospace";
+    this.ctx.textBaseline = "middle";
 
     this.ctx.fillStyle = "#252525";
     this.ctx.strokeStyle = isLocked ? "#6dff6d" : "#3a3a3a";
@@ -463,12 +525,20 @@ export class Renderer {
 
     this.ctx.fillStyle = "#252525";
     this.ctx.beginPath();
-    this.ctx.moveTo(centerX - 4, bubbleY + bubbleHeight);
-    this.ctx.lineTo(centerX, bubbleY + bubbleHeight + 4);
-    this.ctx.lineTo(centerX + 4, bubbleY + bubbleHeight);
+
+    if (pointsDown) {
+      this.ctx.moveTo(bubbleCenterX - 4, bubbleY + bubbleHeight);
+      this.ctx.lineTo(bubbleCenterX, bubbleY + bubbleHeight + 4);
+      this.ctx.lineTo(bubbleCenterX + 4, bubbleY + bubbleHeight);
+    } else {
+      this.ctx.moveTo(bubbleCenterX - 4, bubbleY);
+      this.ctx.lineTo(bubbleCenterX, bubbleY - 4);
+      this.ctx.lineTo(bubbleCenterX + 4, bubbleY);
+    }
+
     this.ctx.fill();
 
-    let textX = centerX - totalWidth / 2;
+    let textX = bubbleCenterX - totalWidth / 2;
     const textY = bubbleY + bubbleHeight / 2;
 
     if (correctPart.length > 0) {
