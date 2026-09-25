@@ -48,9 +48,12 @@ export function updateWaveSpawning(deltaTime, pathStartPoint){
         const health = BASE_HEALTH * (enemy.healthMultiplier ?? 1);
         const speed = enemy.isBoss ? BASE_SPEED * BOSS_SPEED_MULTIPLIER : BASE_SPEED;
 
+        const index = spawnQueue.indexOf(enemy);
+        const spread = (index % 5) * 40 - 80; // spaces them out vertically as they enter
+
         toSpawn.push(new Enemy({
             x: ENEMY_ENTRY_X,
-            y: pathStartPoint.y,
+            y: pathStartPoint.y + spread,
             words: enemy.words,
             maxHealth: health,
             speed,
