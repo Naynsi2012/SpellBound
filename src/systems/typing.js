@@ -2,7 +2,7 @@ import {
     getLockedEnemy,
     setLockedEnemy,
     clearLockedEnemy,
-    pickLockedTarget
+    pickTargetForBuffer
 } from "./targeting.js";
 
 import { resolveWordComplete } from "./combat.js";
@@ -55,24 +55,7 @@ export function handleKeyDown(e, enemies, path, trainingMode = false) {
             return;
         }
 
-        const target = getLockedEnemy();
-
-        if (
-            target &&
-            enemies.includes(target) &&
-            target.isAlive() &&
-            target.getCurrentWord()
-        ) {
-            matchedSequence = recomputeMatch(
-                buffer,
-                target.getCurrentWord()
-            );
-        } else {
-            matchedSequence = "";
-            clearLockedEnemy();
-        }
-
-        awaitingReset = buffer.length > 0 && matchedSequence !== buffer;
+        applyBuffer(enemies, path);
         return;
     }
 
@@ -88,69 +71,9 @@ export function handleKeyDown(e, enemies, path, trainingMode = false) {
         }
     }
 
-    let target = getLockedEnemy();
-
-    /*
-     * Validate the existing lock.
-     *
-     * A target is only valid if:
-     * - it still exists
-     * - it is alive
-     * - it still has a word
-     */
-    if (
-        target &&
-        (
-            !enemies.includes(target) ||
-            !target.isAlive() ||
-            !target.getCurrentWord()
-        )
-    ) {
-        clearLockedEnemy();
-        target = null;
-        matchedSequence = "";
-    }
-
-    // No target means this is the beginning of a new cast.
-    if (!target) {
-        target = pickLockedTarget(key, enemies, path);
-
-        buffer += key;
-
-        if (target) {
-            setLockedEnemy(target);
-            matchedSequence = recomputeMatch(buffer, target.getCurrentWord());
-        } else {
-            matchedSequence = "";
-        }
-
-        const matchedSomething = matchedSequence === buffer;
-        awaitingReset = !matchedSomething;
-
-        if (!trainingMode) {
-            if (matchedSomething) {
-                registerHit();
-            } else {
-                registerMistake();
-            }
-        }
-
-        return;
-    }
-
-    /*
-     * We already have a target.
-     *
-     * Do NOT switch targets halfway through a cast.
-     * Incorrect characters remain in the player buffer
-     * and are displayed in red.
-     */
     buffer += key;
 
-    matchedSequence = recomputeMatch(buffer, target.getCurrentWord());
-
-    const matchedSomething = matchedSequence === buffer;
-    awaitingReset = !matchedSomething;
+    const matchedSomething = applyBuffer(enemies, path);
 
     if (!trainingMode) {
         if (matchedSomething) {
@@ -159,6 +82,8 @@ export function handleKeyDown(e, enemies, path, trainingMode = false) {
             registerMistake();
         }
     }
+
+    const target = getLockedEnemy();
 
     // Word completed
     if (
@@ -177,17 +102,69 @@ export function handleKeyDown(e, enemies, path, trainingMode = false) {
     }
 }
 
-function recomputeMatch(buffer, word) {
-    if (!word) return "";
-    let matched = 0;
+// Re-evaluates the whole typed buffer against every enemy on the field,
+// not just whichever one happened to get locked first. As long as the
+// buffer is still a valid prefix of *some* enemy's word, it (re)locks onto
+// that enemy and shows fully matched/green - so the player is never stuck
+// being "forced" to keep typing for one particular enemy. The buffer only
+// turns red once it no longer matches the start of anything on the field.
+function applyBuffer(enemies, path) {
+    const currentTarget = getLockedEnemy();
+    const lowerBuffer = buffer.toLowerCase();
 
-    while (
-        matched < buffer.length &&
-        matched < word.length &&
-        buffer[matched].toLowerCase() === word[matched].toLowerCase()
+    // Stay on the current target if it's still a valid match - avoids
+    // needlessly hopping between enemies that share a prefix.
+    if (
+        currentTarget &&
+        enemies.includes(currentTarget) &&
+        currentTarget.isAlive() &&
+        currentTarget.getCurrentWord() &&
+        currentTarget.getCurrentWord().toLowerCase().startsWith(lowerBuffer)
     ) {
-        matched++;
+        matchedSequence = buffer;
+        awaitingReset = false;
+        return true;
     }
 
-    return word.slice(0, matched);
+    const target = pickTargetForBuffer(buffer, enemies, path);
+
+    if (target) {
+        setLockedEnemy(target);
+        matchedSequence = buffer;
+        awaitingReset = false;
+        return true;
+    }
+
+    // Nothing on the field can complete this buffer at all - this is the
+    // only case that should read as a genuine mistake/red highlight.
+    clearLockedEnemy();
+    matchedSequence = bestPartialMatch(buffer, enemies);
+    awaitingReset = true;
+    return false;
+}
+
+// The longest prefix of the buffer that still matches the start of some
+// enemy's word, so the player keeps seeing green for everything they
+// typed correctly right up to the point it actually went wrong.
+function bestPartialMatch(buffer, enemies) {
+    const lowerBuffer = buffer.toLowerCase();
+    let bestLength = 0;
+
+    for (const enemy of enemies) {
+        if (!enemy.isAlive()) continue;
+
+        const word = enemy.getCurrentWord();
+        if (!word) continue;
+
+        const length = commonPrefixLength(lowerBuffer, word.toLowerCase());
+        if (length > bestLength) bestLength = length;
+    }
+
+    return buffer.slice(0, bestLength);
+}
+
+function commonPrefixLength(a, b) {
+    let i = 0;
+    while (i < a.length && i < b.length && a[i] === b[i]) i++;
+    return i;
 }

@@ -9,20 +9,13 @@ export function updateEnemyPositions(enemies, path, deltaTime) {
     (a, b) => getTotalDistance(b, path) - getTotalDistance(a, path),
   );
 
-  for (let i = 0; i < ordered.length; i++) {
-    const enemy = ordered[i];
+  // Move every enemy at its own full effective speed. Nothing here is
+  // capped by neighboring enemies, so status effects (paralyze, slow) only
+  // ever affect the enemy they were cast on - never anyone behind it.
+  for (const enemy of ordered) {
     if (!enemy.isAlive()) continue;
 
     let distance = getEffectiveSpeed(enemy) * deltaSeconds;
-
-    // Cap movement so this enemy never gets closer than 
-    // MIN_ENEMY_SEPARATION to whichever enemy is directly ahead of
-    const ahead = ordered[i - 1];
-    if (ahead && ahead.isAlive() && !ahead.reachedEnd) {
-      const gap = getTotalDistance(ahead, path) - getTotalDistance(enemy, path);
-      const allowedAdvance = Math.max(0, gap - MIN_ENEMY_SEPARATION);
-      distance = Math.min(distance, allowedAdvance);
-    }
 
     if (enemy.pathIndex === -1) {
       const target = path.points[0];
@@ -80,6 +73,71 @@ export function updateEnemyPositions(enemies, path, deltaTime) {
       enemy.isAttacking = true;
     }
   }
+
+  // Purely cosmetic pass: nudges where enemies are *drawn* so they don't
+  // render stacked on top of each other, without touching pathIndex,
+  // pathProgress, reachedEnd, or anything gameplay-related. Enemies that
+  // have reached the platform are left alone entirely - they cluster at
+  // the keep and attack together, so they shouldn't be spaced out or act
+  // as a blocker for enemies still approaching.
+  applyVisualSeparation(ordered, path);
+}
+
+function applyVisualSeparation(ordered, path) {
+  let previousVisualDistance = null;
+
+  for (const enemy of ordered) {
+    // Not yet on the path (spread across entry lanes) or already at the
+    // platform: always render at the true position, and never act as a
+    // blocker for whoever comes next.
+    if (!enemy.isAlive() || enemy.pathIndex === -1 || enemy.reachedEnd) {
+      enemy.visualX = enemy.x;
+      enemy.visualY = enemy.y;
+      previousVisualDistance = null;
+      continue;
+    }
+
+    const trueDistance = getTotalDistance(enemy, path);
+    let visualDistance = trueDistance;
+
+    if (previousVisualDistance !== null) {
+      visualDistance = Math.min(
+        trueDistance,
+        previousVisualDistance - MIN_ENEMY_SEPARATION,
+      );
+    }
+
+    const pos = getPositionAtDistance(path, visualDistance);
+    enemy.visualX = pos.x;
+    enemy.visualY = pos.y;
+
+    previousVisualDistance = visualDistance;
+  }
+}
+
+function getPositionAtDistance(path, distance) {
+  if (distance <= 0) {
+    const first = path.points[0];
+    return { x: first.x, y: first.y };
+  }
+
+  let remaining = distance;
+
+  for (let i = 0; i < path.points.length - 1; i++) {
+    const a = path.points[i];
+    const b = path.points[i + 1];
+    const segmentLength = Math.hypot(b.x - a.x, b.y - a.y);
+
+    if (remaining <= segmentLength) {
+      const t = segmentLength === 0 ? 0 : remaining / segmentLength;
+      return { x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t };
+    }
+
+    remaining -= segmentLength;
+  }
+
+  const last = path.points[path.points.length - 1];
+  return { x: last.x, y: last.y };
 }
 
 function getTotalDistance(enemy, path) {

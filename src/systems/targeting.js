@@ -25,7 +25,13 @@ export function pruneLockedEnemy(enemies) {
     }
 }
 
-export function pickLockedTarget(key, enemies, path) {
+// Finds the best enemy to lock onto for a given typed buffer: any enemy
+// whose current word still starts with everything typed so far (not just
+// the first character). When several enemies match, the one furthest along
+// the path is preferred, since it's the more urgent threat.
+export function pickTargetForBuffer(buffer, enemies, path) {
+    const lowerBuffer = buffer.toLowerCase();
+
     const candidates = enemies.filter((enemy) => {
         if (!enemy.isAlive()) return false;
 
@@ -33,9 +39,7 @@ export function pickLockedTarget(key, enemies, path) {
 
         if (!word) return false;
 
-        return word
-            .toLowerCase()
-            .startsWith(key.toLowerCase());
+        return word.toLowerCase().startsWith(lowerBuffer);
     });
 
     if (candidates.length === 0) {
@@ -48,6 +52,11 @@ export function pickLockedTarget(key, enemies, path) {
             ? enemy
             : closest
     );
+}
+
+// Kept as a thin wrapper for starting a fresh cast off a single keystroke.
+export function pickLockedTarget(key, enemies, path) {
+    return pickTargetForBuffer(key, enemies, path);
 }
 
 function getPathDistance(enemy, path) {
