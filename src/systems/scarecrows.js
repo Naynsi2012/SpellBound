@@ -1,4 +1,5 @@
 import { Enemy } from "../entities/enemy.js";
+import { TILE_SIZE } from "../core/constants.js";
 
 const WORD_POOL = [
   "fire",
@@ -11,7 +12,6 @@ const WORD_POOL = [
   "spark",
 ];
 
-const SCARECROW_COUNT = 3;
 const SCARECROW_HEALTH = 60;
 
 function randomWords(count) {
@@ -22,8 +22,8 @@ function randomWords(count) {
 
 export function createScarecrow(position) {
   return new Enemy({
-    x: position.x,
-    y: position.y,
+    x: position.col * TILE_SIZE + TILE_SIZE / 2,
+    y: position.row * TILE_SIZE + TILE_SIZE / 2,
 
     words: randomWords(1 + Math.floor(Math.random() * 2)),
 
@@ -32,15 +32,4 @@ export function createScarecrow(position) {
     spriteId: "dummy",
     pathIndex: 0,
   });
-}
-
-export function getScarecrowPositions(path) {
-  const points = path.points;
-
-  const step = Math.max(1, Math.floor(points.length / (SCARECROW_COUNT + 1)));
-
-  return Array.from(
-    { length: SCARECROW_COUNT },
-    (_, i) => points[Math.min(points.length - 1, (i + 1) * step)],
-  );
 }

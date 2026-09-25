@@ -1,20 +1,36 @@
 import { Renderer } from "../rendering/renderer.js";
 import { createMap } from "../map/map.js";
 import { loadTiles, loadEnemySprites } from "../assets/loader.js";
-import { CANVAS_WIDTH, CANVAS_HEIGHT } from "./constants.js";
+import { CANVAS_WIDTH, CANVAS_HEIGHT, TILE_SIZE } from "./constants.js";
 import { Enemy } from "../entities/enemy.js";
 import { updateEnemyPositions } from "../systems/movement.js";
 import { initInput } from "../systems/input.js";
-import { handleKeyDown, getTypedBuffer, getMatchedSequence, clearTypedBuffer, interruptCast } from "../systems/typing.js";
+import {
+  handleKeyDown,
+  getTypedBuffer,
+  getMatchedSequence,
+  clearTypedBuffer,
+  interruptCast,
+} from "../systems/typing.js";
 import { updateEnemyEffects } from "../systems/combat.js";
 import { getLockedEnemy, pruneLockedEnemy } from "../systems/targeting.js";
 import { updatePlatformAttack } from "../systems/platform.js";
 import { Platform } from "../entities/platform.js";
 import { updateMana, getMana, getMaxMana, resetMana } from "../systems/mana.js";
 import { getCombo, resetCombo } from "../systems/penalty.js";
-import { cycleSpell, getActiveSpell, resetActiveSpell } from "../systems/spells.js";
+import {
+  cycleSpell,
+  getActiveSpell,
+  resetActiveSpell,
+} from "../systems/spells.js";
 import { updateStatusEffects } from "../systems/statusEffects.js";
-import { getMenuOptions, getSelectedIndex, moveSelection, getSelectedOption, resetSelection } from "../systems/menu.js";
+import {
+  getMenuOptions,
+  getSelectedIndex,
+  moveSelection,
+  getSelectedOption,
+  resetSelection,
+} from "../systems/menu.js";
 import {
   resetWaves,
   startWave,
@@ -25,11 +41,12 @@ import {
   getCurrentWaveNumber,
   getWaveCount,
 } from "../systems/waves.js";
-import { createScarecrow, getScarecrowPositions } from "../systems/scarecrows.js";
+import { createScarecrow } from "../systems/scarecrows.js";
 import { ENEMY_DEATH_LINGER_MS } from "./constants.js";
 
 import spawnMapData from "../data/maps/spawn.json";
 import trainingMapData from "../data/maps/training.json";
+import dummyData from "../data/dummies.json";
 
 const MAPS = {
   spawn: spawnMapData,
@@ -85,9 +102,11 @@ export class Game {
   }
 
   setupTrainingTargets() {
-    const positions = getScarecrowPositions(this.map.path);
-    this.trainingPositions = positions;
-    this.enemies = positions.map((pos) => createScarecrow(pos));
+    this.trainingPositions = dummyData.dummies.map((dummy) => dummy.position);
+
+    this.enemies = this.trainingPositions.map((position) =>
+      createScarecrow(position),
+    );
   }
 
   refillTrainingTargets() {
@@ -95,16 +114,18 @@ export class Game {
       this.enemies.map((enemy) => `${enemy.x},${enemy.y}`),
     );
 
-    while (this.enemies.length < this.trainingPositions.length) {
-      const freeSpot = this.trainingPositions.find(
-        (pos) => !occupied.has(`${pos.x},${pos.y}`),
-      );
+    for (const position of this.trainingPositions) {
+      if (this.enemies.length >= this.trainingPositions.length) break;
 
-      if (!freeSpot) break;
+      const x = position.col * TILE_SIZE + TILE_SIZE / 2;
+      const y = position.row * TILE_SIZE + TILE_SIZE / 2;
 
-      const scarecrow = createScarecrow(freeSpot);
+      if (occupied.has(`${x},${y}`)) continue;
+
+      const scarecrow = createScarecrow(position);
+
       this.enemies.push(scarecrow);
-      occupied.add(`${freeSpot.x},${freeSpot.y}`);
+      occupied.add(`${scarecrow.x},${scarecrow.y}`);
     }
   }
 
