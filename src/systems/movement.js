@@ -9,12 +9,10 @@ export function updateEnemyPositions(enemies, path, deltaTime) {
     (a, b) => getTotalDistance(b, path) - getTotalDistance(a, path),
   );
 
-  // Move every enemy at its own full effective speed. Nothing here is
-  // capped by neighboring enemies, so status effects (paralyze, slow) only
-  // ever affect the enemy they were cast on - never anyone behind it.
   for (const enemy of ordered) {
     if (!enemy.isAlive()) continue;
 
+    const startX = enemy.x;
     let distance = getEffectiveSpeed(enemy) * deltaSeconds;
 
     if (enemy.pathIndex === -1) {
@@ -68,18 +66,16 @@ export function updateEnemyPositions(enemies, path, deltaTime) {
       }
     }
 
+    const dxMoved = enemy.x - startX;
+    if (dxMoved > 0.01) enemy.facingRight = true;
+    else if (dxMoved < -0.01) enemy.facingRight = false;
+
     if (enemy.pathIndex >= path.points.length - 1) {
       enemy.reachedEnd = true;
       enemy.isAttacking = true;
     }
   }
 
-  // Purely cosmetic pass: nudges where enemies are *drawn* so they don't
-  // render stacked on top of each other, without touching pathIndex,
-  // pathProgress, reachedEnd, or anything gameplay-related. Enemies that
-  // have reached the platform are left alone entirely - they cluster at
-  // the keep and attack together, so they shouldn't be spaced out or act
-  // as a blocker for enemies still approaching.
   applyVisualSeparation(ordered, path);
 }
 
@@ -87,9 +83,6 @@ function applyVisualSeparation(ordered, path) {
   let previousVisualDistance = null;
 
   for (const enemy of ordered) {
-    // Not yet on the path (spread across entry lanes) or already at the
-    // platform: always render at the true position, and never act as a
-    // blocker for whoever comes next.
     if (!enemy.isAlive() || enemy.pathIndex === -1 || enemy.reachedEnd) {
       enemy.visualX = enemy.x;
       enemy.visualY = enemy.y;

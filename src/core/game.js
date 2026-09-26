@@ -1,7 +1,6 @@
 import { Renderer } from "../rendering/renderer.js";
-import { createMap } from "../map/map.js";
-import { loadTiles, loadEnemySprites } from "../assets/loader.js";
-import { CANVAS_WIDTH, CANVAS_HEIGHT, TILE_SIZE } from "./constants.js";
+import { loadEnemySprites } from "../assets/loader.js";
+import { TILE_SIZE } from "./constants.js";
 import { Enemy } from "../entities/enemy.js";
 import { updateEnemyPositions } from "../systems/movement.js";
 import { initInput } from "../systems/input.js";
@@ -44,13 +43,14 @@ import {
 import { createScarecrow } from "../systems/scarecrows.js";
 import { ENEMY_DEATH_LINGER_MS } from "./constants.js";
 
-import spawnMapData from "../data/maps/spawn.json";
-import trainingMapData from "../data/maps/training.json";
 import dummyData from "../data/dummies.json";
 
+import { loadTmxMap } from "../map/tmxLoader.js";
+import { loadTilesetImages } from "../assets/loader.js";
+
 const MAPS = {
-  spawn: spawnMapData,
-  training: trainingMapData,
+  spawn: "/src/data/maps/spawn.tmx",
+  training: "/src/data/maps/training.tmx",
 };
 
 export class Game {
@@ -58,34 +58,39 @@ export class Game {
     this.canvas = document.getElementById("game");
     this.ctx = this.canvas.getContext("2d");
     this.lastTime = 0;
+    this.canvas.width = 800;
+    this.canvas.height = 480;
   }
 
   async start() {
-    this.canvas.width = CANVAS_WIDTH;
-    this.canvas.height = CANVAS_HEIGHT;
-
-    const tiles = await loadTiles();
     const enemySprites = await loadEnemySprites();
 
-    this.renderer = new Renderer(this.canvas, this.ctx, tiles, enemySprites);
-
+    this.renderer = new Renderer(this.canvas, this.ctx, enemySprites, {});
     this.state = "menu";
 
     initInput((e) => this.handleKeyDown(e));
 
-    this.fitToWindow();
     window.addEventListener("resize", () => this.fitToWindow());
     requestAnimationFrame((time) => this.loop(time));
   }
 
-  loadSelectedMap(mapId) {
-    this.map = createMap(MAPS[mapId]);
-    this.trainingMode = MAPS[mapId].mode === "training";
+  async loadSelectedMap(mapId) {
+    const tilesetImages = await loadTilesetImages();
+    this.map = await loadTmxMap(MAPS[mapId]);
+    this.map.tilesetImages = tilesetImages;
+    this.renderer.tilesetImages = tilesetImages;
+
+    this.canvas.width = this.map.cols * this.map.tileSize;
+    this.canvas.height = this.map.rows * this.map.tileSize;
+    this.ctx.imageSmoothingEnabled = false;
+    this.fitToWindow();
+
+    this.trainingMode = mapId === "training";
     this.setupRun();
   }
 
   setupRun() {
-    this.platform = this.createPlatform();
+    this.platform = this.trainingMode ? null : this.createPlatform();
     this.enemies = [];
 
     resetMana();
@@ -100,7 +105,6 @@ export class Game {
       this.setupTrainingTargets();
     }
   }
-
   setupTrainingTargets() {
     this.trainingPositions = dummyData.dummies.map((dummy) => dummy.position);
 
@@ -135,8 +139,9 @@ export class Game {
       if (e.key === "ArrowDown") moveSelection(1);
       if (e.key === "Enter") {
         const option = getSelectedOption();
-        this.loadSelectedMap(option.mapId);
-        this.state = "ready";
+        this.loadSelectedMap(option.mapId).then(() => {
+          this.state = "ready";
+        });
       }
       return;
     }
@@ -174,12 +179,13 @@ export class Game {
 
   createPlatform() {
     const data = this.map.platform;
-
     return new Platform({
-      col: data.col,
-      row: data.row,
+      x: data.x,
+      y: data.y,
+      width: data.width,
+      height: data.height,
       type: data.type,
-      maxHealth: data.maxHealth,
+      maxHealth: parseInt(data.maxHealth),
     });
   }
 
@@ -199,11 +205,11 @@ export class Game {
 
   fitToWindow() {
     const scale = Math.min(
-      window.innerWidth / CANVAS_WIDTH,
-      window.innerHeight / CANVAS_HEIGHT,
+      window.innerWidth / this.canvas.width,
+      window.innerHeight / this.canvas.height,
     );
-    this.canvas.style.width = `${CANVAS_WIDTH * scale}px`;
-    this.canvas.style.height = `${CANVAS_HEIGHT * scale}px`;
+    this.canvas.style.width = `${this.canvas.width * scale}px`;
+    this.canvas.style.height = `${this.canvas.height * scale}px`;
   }
 
   loop(time) {
@@ -219,9 +225,13 @@ export class Game {
   update(deltaTime) {
     if (this.state !== "playing") return;
 
-    updateEnemyPositions(this.enemies, this.map.path, deltaTime);
+    if (!this.trainingMode) {
+      updateEnemyPositions(this.enemies, this.map.path, deltaTime);
+    }
     updateStatusEffects(this.enemies, deltaTime);
-    updatePlatformAttack(this.enemies, this.platform, deltaTime);
+    if (!this.trainingMode) {
+      updatePlatformAttack(this.enemies, this.platform, deltaTime);
+    }
     updateEnemyEffects(this.enemies, deltaTime);
 
     if (!this.trainingMode) {
