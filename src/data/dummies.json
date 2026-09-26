@@ -1,13 +1,8 @@
 {
   "dummies": [
-    {
-      "position": { "col": 10, "row": 12 }
-    },
-    {
-      "position": { "col": 20, "row": 18 }
-    },
-    {
-      "position": { "col": 30, "row": 10 }
-    }
+    { "position": { "col": 16, "row": 13 } },
+    { "position": { "col": 23, "row": 10 } },
+    { "position": { "col": 29, "row": 11 } },
+    { "position": { "col": 32, "row": 18 } }
   ]
 }
