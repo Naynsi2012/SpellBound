@@ -1,10 +1,7 @@
-import { TILE_SIZE } from "../core/constants.js";
-import { PREFABS, getPrefabSize } from "../map/prefabs.js";
 import { getAnimState } from "../entities/animation.js";
+import { resolveTile } from "../map/tmxLoader.js";
 
-const OBJECT_SCALE = 2;
-const DEFAULT_ENEMY_SCALE = 2;
-const PLATFORM_SCALE = 2;
+const DEFAULT_ENEMY_SCALE = 1; 
 
 const SPELL_COLORS = {
   none: "#aaaaaa",
@@ -23,21 +20,18 @@ const SPELL_LABELS = {
 const ANIMATIONS = {
   dummy: {
     frameSize: 32,
-    scale: 2,
-    visualTopOffset: 10,
-    // Where the visible (non-transparent) bottom of the sprite sits within
-    // the frame, in already-scaled pixels. Used to place UI relative to the
-    // character's actual feet instead of the padded sprite bounding box.
-    visualBottomOffset: 56,
+    scale: 1.25,
+    visualTopRatio: 0.156,
+    visualBottomRatio: 0.875,
     idle: { row: 0, frames: 4, frameDuration: 180 },
     hurt: { row: 1, frames: 5, frameDuration: 90 },
     death: { row: 2, frames: 8, frameDuration: 150 },
   },
   soldier: {
     frameSize: 96,
-    scale: 2,
-    visualTopOffset: 80,
-    visualBottomOffset: 120,
+    scale: 1.25,
+    visualTopRatio: 0.417,
+    visualBottomRatio: 0.625,
     walk: { row: 1, frames: 8, frameDuration: 90 },
     hurt: { row: 6, frames: 4, frameDuration: 90 },
     attack: { row: 5, frames: 8, frameDuration: 90 },
@@ -45,9 +39,9 @@ const ANIMATIONS = {
   },
   slime: {
     frameSize: 96,
-    scale: 2,
-    visualTopOffset: 90,
-    visualBottomOffset: 120,
+    scale: 1.25,
+    visualTopRatio: 0.469,
+    visualBottomRatio: 0.625,
     walk: { row: 1, frames: 8, frameDuration: 90 },
     hurt: { row: 6, frames: 4, frameDuration: 90 },
     attack: { row: 4, frames: 8, frameDuration: 90 },
@@ -56,11 +50,11 @@ const ANIMATIONS = {
 };
 
 export class Renderer {
-  constructor(canvas, ctx, tiles, enemySprites) {
+  constructor(canvas, ctx, enemySprites, tilesetImages) {
     this.canvas = canvas;
     this.ctx = ctx;
-    this.tiles = tiles;
     this.enemySprites = enemySprites;
+    this.tilesetImages = tilesetImages;
 
     this.ctx.imageSmoothingEnabled = false;
   }
@@ -92,8 +86,7 @@ export class Renderer {
       return;
     }
 
-    this.drawGrid(map);
-    this.drawObjects(map);
+    this.drawTmxLayers(map);
     this.drawPlatform(platform);
 
     this.drawEnemies(enemies, matchedSequence, lockedEnemy, typedBuffer);
@@ -181,76 +174,56 @@ export class Renderer {
     });
   }
 
-  drawGrid(map) {
-    map.grid.forEach((row, rowIndex) => {
-      row.forEach((tileId, colIndex) => {
-        const img = this.tiles[tileId];
+  drawTmxLayers(map) {
+    const { cols, tileSize, tilesets, layers } = map;
+
+    for (const layer of layers) {
+      layer.gids.forEach((gid, index) => {
+        const resolved = resolveTile(gid, tilesets);
+        if (!resolved) return;
+
+        const img = this.tilesetImages[resolved.tileset.name];
         if (!img) return;
+
+        const localCol = resolved.localId % resolved.tileset.columns;
+        const localRow = Math.floor(
+          resolved.localId / resolved.tileset.columns,
+        );
+
+        const col = index % cols;
+        const row = Math.floor(index / cols);
 
         this.ctx.drawImage(
           img,
-          colIndex * TILE_SIZE,
-          rowIndex * TILE_SIZE,
-          TILE_SIZE,
-          TILE_SIZE,
+          localCol * tileSize,
+          localRow * tileSize,
+          tileSize,
+          tileSize,
+          col * tileSize,
+          row * tileSize,
+          tileSize,
+          tileSize,
         );
       });
-    });
-  }
-
-  drawPrefab(type, col, row, scale) {
-    const prefab = PREFABS[type];
-    if (!prefab) return;
-
-    const size = TILE_SIZE * scale;
-
-    const originX = col * TILE_SIZE;
-    const originY = row * TILE_SIZE;
-
-    for (const tile of prefab) {
-      const img = this.tiles[tile.tileId];
-      if (!img) continue;
-
-      const x = originX + tile.dcol * size;
-      const y = originY + tile.drow * size;
-
-      this.ctx.drawImage(img, x, y, size, size);
-    }
-  }
-
-  drawObjects(map) {
-    for (const object of map.objects) {
-      this.drawPrefab(object.kind, object.col, object.row, OBJECT_SCALE);
     }
   }
 
   drawPlatform(platform) {
     if (!platform) return;
-
-    this.drawPrefab(platform.type, platform.col, platform.row, PLATFORM_SCALE);
-
-    const size = getPrefabSize(platform.type);
-    const width = size.cols * TILE_SIZE * PLATFORM_SCALE;
-
     this.drawPlatformHealthBar(
       platform,
-      platform.col * TILE_SIZE,
-      platform.row * TILE_SIZE,
-      width,
+      platform.x,
+      platform.y,
+      platform.width,
     );
   }
 
   drawEnemies(enemies, matchedSequence, lockedEnemy) {
-    const visible = enemies.filter((enemy) => !isFlickering(enemy));
+    const visible = enemies;
 
     const placedBubbles = [];
     const plans = [];
 
-    // Pass 1: work out geometry and where each enemy's health bar / status
-    // icons / word bubble should sit, as one group. A bubble that can't fit
-    // above the enemy (overlap with an already-placed bubble) flips the
-    // whole group - bar, icons and bubble together - below the enemy's feet,
-    // so the bar never gets stranded up top while its bubble is down below.
     for (const enemy of visible) {
       const img = this.enemySprites[enemy.spriteId];
       if (!img) continue;
@@ -264,8 +237,8 @@ export class Renderer {
       const x = enemy.x - width / 2;
       const y = enemy.y - height / 2;
 
-      const visualTopY = y + (animConfig?.visualTopOffset ?? 0);
-      const visualBottomY = y + (animConfig?.visualBottomOffset ?? height);
+      const visualTopY = y + height * (animConfig?.visualTopRatio ?? 0);
+      const visualBottomY = y + height * (animConfig?.visualBottomRatio ?? 1);
 
       const centerX = Math.round(enemy.x);
       const aboveBarRect = this.getHealthBarRect(
@@ -275,10 +248,12 @@ export class Renderer {
 
       // Skip the word bubble entirely while the death animation is playing
       const isLocked = enemy === lockedEnemy;
+      const isDead = !enemy.isAlive();
+
       const layout =
-        getAnimState(enemy) === "death"
+        isDead || getAnimState(enemy) === "death"
           ? null
-          : this.measureWordBubble(enemy, matchedSequence, isLocked);
+          : this.measureWordBubble(enemy, matchedSequence, isLocked, scale);
 
       let barRect = aboveBarRect;
       let bubblePlan = null;
@@ -345,14 +320,21 @@ export class Renderer {
       });
     }
 
-    // Pass 2: draw sprites, health bars and status icons.
+    // Draw sprites, health bars and status icons.
     for (const plan of plans) {
-      this.drawEnemySprite(plan.enemy, plan.img, plan.x, plan.y, plan.width, plan.height);
+      this.drawEnemySprite(
+        plan.enemy,
+        plan.img,
+        plan.x,
+        plan.y,
+        plan.width,
+        plan.height,
+      );
       this.drawEnemyHealthBar(plan.enemy, plan.barRect);
       this.drawStatusIcons(plan.enemy, plan.barRect);
     }
 
-    // Pass 3: draw word bubbles on top of everything.
+    // Draw word bubbles on top of everything.
     for (const plan of plans) {
       if (!plan.layout || !plan.bubblePlan) continue;
 
@@ -368,16 +350,30 @@ export class Renderer {
   }
 
   drawEnemySprite(enemy, img, x, y, width, height) {
+    if (isFlickering(enemy)) {
+      return;
+    }
+
     const animState = getAnimState(enemy);
     const spriteAnim = ANIMATIONS[enemy.spriteId];
     const animConfig = spriteAnim?.[animState];
+
+    const flip = enemy.facingRight === false;
+
+    this.ctx.save();
+
+    if (flip) {
+      this.ctx.translate(x + width, y);
+      this.ctx.scale(-1, 1);
+    } else {
+      this.ctx.translate(x, y);
+    }
 
     if (animConfig) {
       const frameSize = spriteAnim.frameSize;
       const frameIndex =
         Math.floor(enemy.animTimer / animConfig.frameDuration) %
         animConfig.frames;
-
       const sx = frameIndex * frameSize;
       const sy = animConfig.row * frameSize;
 
@@ -387,14 +383,16 @@ export class Renderer {
         sy,
         frameSize,
         frameSize,
-        x,
-        y,
+        0,
+        0,
         width,
         height,
       );
     } else {
-      this.ctx.drawImage(img, x, y, width, height);
+      this.ctx.drawImage(img, 0, 0, width, height);
     }
+
+    this.ctx.restore();
   }
 
   getHealthBarRect(centerX, enemyTopY) {
@@ -469,7 +467,7 @@ export class Renderer {
 
   // Measures (but doesn't draw) the word bubble for an enemy, so its size
   // can be used to decide bubble placement before anything is rendered.
-  measureWordBubble(enemy, matchedSequence, isLocked) {
+  measureWordBubble(enemy, matchedSequence, isLocked, scale) {
     const word = enemy.getCurrentWord();
     if (!word) return null;
 
@@ -477,8 +475,9 @@ export class Renderer {
     const correctPart = word.slice(0, matchedLength);
     const remainingPart = word.slice(matchedLength);
 
+    const fontSize = Math.max(10, Math.round(14 * scale));
     this.ctx.save();
-    this.ctx.font = "bold 14px monospace";
+    this.ctx.font = `bold ${fontSize}px monospace`;
     const correctWidth = this.ctx.measureText(correctPart).width;
     const remainingWidth = this.ctx.measureText(remainingPart).width;
     this.ctx.restore();
@@ -486,8 +485,8 @@ export class Renderer {
     const totalWidth = correctWidth + remainingWidth;
     const paddingX = 10;
 
-    const bubbleWidth = Math.max(36, totalWidth + paddingX * 2);
-    const bubbleHeight = 26;
+    const bubbleWidth = Math.max(36 * scale, totalWidth + paddingX * 2);
+    const bubbleHeight = Math.max(18, Math.round(26 * scale));
 
     return {
       correctPart,
@@ -497,16 +496,31 @@ export class Renderer {
       totalWidth,
       bubbleWidth,
       bubbleHeight,
+      fontSize,
     };
   }
 
-  drawWordBubble(layout, bubbleX, bubbleY, pointsDown, bubbleCenterX, isLocked) {
-    const { bubbleWidth, bubbleHeight, correctPart, remainingPart, correctWidth, totalWidth } =
-      layout;
+  drawWordBubble(
+    layout,
+    bubbleX,
+    bubbleY,
+    pointsDown,
+    bubbleCenterX,
+    isLocked,
+  ) {
+    const {
+      bubbleWidth,
+      bubbleHeight,
+      correctPart,
+      remainingPart,
+      correctWidth,
+      totalWidth,
+      fontSize,
+    } = layout;
 
     this.ctx.save();
 
-    this.ctx.font = "bold 14px monospace";
+    this.ctx.font = `bold ${fontSize}px monospace`;
     this.ctx.textBaseline = "middle";
 
     this.ctx.fillStyle = "#252525";
@@ -538,7 +552,7 @@ export class Renderer {
 
     this.ctx.fill();
 
-    let textX = bubbleCenterX - totalWidth / 2;
+    let textX = bubbleX + (bubbleWidth - totalWidth) / 2;
     const textY = bubbleY + bubbleHeight / 2;
 
     if (correctPart.length > 0) {

@@ -1,17 +1,3 @@
-import { TILE_COUNT, tileFileName } from "../map/tiles.js";
-
-export async function loadTiles() {
-  const entries = await Promise.all(
-    Array.from({ length: TILE_COUNT }, (_, id) =>
-      loadImage(
-        new URL(`./tiles/${tileFileName(id)}`, import.meta.url).href,
-      ).then((img) => [id, img]),
-    ),
-  );
-
-  return Object.fromEntries(entries);
-}
-
 export async function loadEnemySprites(basePath = "/src/assets/sprites/") {
   const ENEMY_FILES = {
     dummy: "dummy/dummy.png",
@@ -36,4 +22,16 @@ function loadImage(src) {
     img.onerror = reject;
     img.src = src;
   });
+}
+
+const TILESET_FILES = [
+    "plains", "grass", "fences", "House", "Maple Tree",
+    "tilemap_packed", "dungeon_tilemap_packed", "Tileset Grass Spring",
+];
+
+export async function loadTilesetImages(basePath = "/src/assets/tilesets/") {
+    const entries = await Promise.all(
+        TILESET_FILES.map((name) => loadImage(`${basePath}${name}.png`).then((img) => [name, img]))
+    );
+    return Object.fromEntries(entries);
 }
