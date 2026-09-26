@@ -42,6 +42,7 @@ import {
 } from "../systems/waves.js";
 import { createScarecrow } from "../systems/scarecrows.js";
 import { ENEMY_DEATH_LINGER_MS } from "./constants.js";
+import { AudioManager } from "./audioManager.js";
 
 import dummyData from "../data/dummies.json";
 
@@ -57,12 +58,14 @@ export class Game {
   constructor() {
     this.canvas = document.getElementById("game");
     this.ctx = this.canvas.getContext("2d");
+    this.audio = new AudioManager();
     this.lastTime = 0;
     this.canvas.width = 800;
     this.canvas.height = 480;
   }
 
   async start() {
+    this.audio.loadAll();
     const enemySprites = await loadEnemySprites();
 
     this.renderer = new Renderer(this.canvas, this.ctx, enemySprites, {});
@@ -105,6 +108,7 @@ export class Game {
       this.setupTrainingTargets();
     }
   }
+
   setupTrainingTargets() {
     this.trainingPositions = dummyData.dummies.map((dummy) => dummy.position);
 
@@ -135,8 +139,16 @@ export class Game {
 
   handleKeyDown(e) {
     if (this.state === "menu") {
-      if (e.key === "ArrowUp") moveSelection(-1);
-      if (e.key === "ArrowDown") moveSelection(1);
+      if (e.key === "ArrowUp") {
+        moveSelection(-1);
+        this.audio.play("select");
+      }
+
+      if (e.key === "ArrowDown") {
+        moveSelection(1);
+        this.audio.play("select");
+      }
+
       if (e.key === "Enter") {
         const option = getSelectedOption();
         this.loadSelectedMap(option.mapId).then(() => {
@@ -170,10 +182,11 @@ export class Game {
       if (e.key === "Tab") {
         e.preventDefault();
         cycleSpell(1);
+        this.audio.play("spellSwitch");
         return;
       }
 
-      handleKeyDown(e, this.enemies, this.map.path, this.trainingMode);
+      handleKeyDown(e, this.enemies, this.map.path, this.trainingMode, this.audio);
     }
   }
 
@@ -256,12 +269,17 @@ export class Game {
     } else if (isWaveSpawningComplete() && this.enemies.length === 0) {
       if (hasNextWave()) {
         this.state = "waveComplete";
+        this.audio.play("waveWon");
       } else {
         this.state = "victory";
+        this.audio.play("won");
       }
     }
 
-    if (!this.trainingMode && !this.platform.isAlive()) this.state = "gameover";
+    if (!this.trainingMode && !this.platform.isAlive()) {
+      this.state = "gameover";
+      this.audio.play("lost");
+    }
   }
 
   render() {

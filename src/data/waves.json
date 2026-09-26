@@ -12,20 +12,20 @@
         {
             "enemies": [
                 { "words": ["dragon"], "spriteId": "soldier", "spawnDelay": 0 },
-                { "words": ["fire", "cream"], "spriteId": "cyclops", "spawnDelay": 1000 },
-                { "words": ["storm"], "spriteId": "ghost", "spawnDelay": 2000 },
-                { "words": ["storm"], "spriteId": "ghost", "spawnDelay": 2800 },
-                { "words": ["water", "wind"], "spriteId": "cyclops", "spawnDelay": 3800 },
-                { "words": ["fire"], "spriteId": "ghost", "spawnDelay": 4800 }
+                { "words": ["fire", "cream"], "spriteId": "soldier", "spawnDelay": 1000 },
+                { "words": ["storm"], "spriteId": "soldier", "spawnDelay": 2000 },
+                { "words": ["storm"], "spriteId": "soldier", "spawnDelay": 2800 },
+                { "words": ["water", "wind"], "spriteId": "soldier", "spawnDelay": 3800 },
+                { "words": ["fire"], "spriteId": "slime", "spawnDelay": 4800 }
             ]
         },
         {
             "enemies": [
-                { "words": ["fire", "cream", "storm"], "spriteId": "cyclops", "spawnDelay": 0 },
-                { "words": ["dragon", "wind"], "spriteId": "cyclops", "spawnDelay": 1200 },
-                { "words": ["water"], "spriteId": "ghost", "spawnDelay": 2200 },
-                { "words": ["storm"], "spriteId": "ghost", "spawnDelay": 2800 },
-                { "words": ["boss", "guardian", "ancient"], "spriteId": "cyclops", "spawnDelay": 5000, "isBoss": true, "healthMultiplier": 4 }
+                { "words": ["fire", "cream", "storm"], "spriteId": "slime", "spawnDelay": 0 },
+                { "words": ["dragon", "wind"], "spriteId": "soldier", "spawnDelay": 1200 },
+                { "words": ["water"], "spriteId": "soldier", "spawnDelay": 2200 },
+                { "words": ["storm"], "spriteId": "slime", "spawnDelay": 2800 },
+                { "words": ["boss", "guardian", "slime"], "spriteId": "slime", "spawnDelay": 5000, "isBoss": true, "healthMultiplier": 4 }
             ]
         }
     ]

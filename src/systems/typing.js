@@ -41,7 +41,7 @@ export function interruptCast() {
     registerMistake();
 }
 
-export function handleKeyDown(e, enemies, path, trainingMode = false) {
+export function handleKeyDown(e, enemies, path, trainingMode = false, audio) {
     if (e.key === "Backspace") {
         if (buffer.length === 0) return;
 
@@ -74,6 +74,7 @@ export function handleKeyDown(e, enemies, path, trainingMode = false) {
     buffer += key;
 
     const matchedSomething = applyBuffer(enemies, path);
+    audio.play("type");
 
     if (!trainingMode) {
         if (matchedSomething) {
@@ -98,16 +99,11 @@ export function handleKeyDown(e, enemies, path, trainingMode = false) {
         matchedSequence = "";
         awaitingReset = false;
 
+        if (!target.isAlive()) audio.play("death"); // plays when the enemy is dead
         clearLockedEnemy();
     }
 }
 
-// Re-evaluates the whole typed buffer against every enemy on the field,
-// not just whichever one happened to get locked first. As long as the
-// buffer is still a valid prefix of *some* enemy's word, it (re)locks onto
-// that enemy and shows fully matched/green - so the player is never stuck
-// being "forced" to keep typing for one particular enemy. The buffer only
-// turns red once it no longer matches the start of anything on the field.
 function applyBuffer(enemies, path) {
     const currentTarget = getLockedEnemy();
     const lowerBuffer = buffer.toLowerCase();
