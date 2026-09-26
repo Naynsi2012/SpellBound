@@ -1,7 +1,7 @@
 import { getAnimState } from "../entities/animation.js";
 import { resolveTile } from "../map/tmxLoader.js";
 
-const DEFAULT_ENEMY_SCALE = 1; 
+const DEFAULT_ENEMY_SCALE = 1;
 
 const SPELL_COLORS = {
   none: "#aaaaaa",
@@ -87,21 +87,16 @@ export class Renderer {
     }
 
     this.drawTmxLayers(map);
-    this.drawPlatform(platform);
-
     this.drawEnemies(enemies, matchedSequence, lockedEnemy, typedBuffer);
     this.drawInputBox(typedBuffer, matchedSequence);
 
     if (!trainingMode) {
+      this.drawKeepHud(platform);
       this.drawManaBar(mana, maxMana);
       this.drawComboIndicator(combo);
     }
 
     this.drawSpellIndicator(activeSpell);
-
-    if (!trainingMode) {
-      this.drawBaseHudBar(platform);
-    }
 
     if (state === "ready") {
       this.drawReadyScreen();
@@ -206,16 +201,6 @@ export class Renderer {
         );
       });
     }
-  }
-
-  drawPlatform(platform) {
-    if (!platform) return;
-    this.drawPlatformHealthBar(
-      platform,
-      platform.x,
-      platform.y,
-      platform.width,
-    );
   }
 
   drawEnemies(enemies, matchedSequence, lockedEnemy) {
@@ -628,48 +613,6 @@ export class Renderer {
     }
   }
 
-  drawManaBar(mana, maxMana) {
-    const x = 12;
-    const y = 12;
-    const width = 160;
-    const height = 14;
-
-    const ratio = Math.max(0, Math.min(1, mana / maxMana));
-
-    this.ctx.fillStyle = "#171717";
-    this.ctx.fillRect(x, y, width, height);
-
-    this.ctx.fillStyle = "#4f8fe0";
-    this.ctx.fillRect(x + 1, y + 1, (width - 2) * ratio, height - 2);
-
-    this.ctx.strokeStyle = "#000";
-    this.ctx.lineWidth = 1;
-    this.ctx.strokeRect(x + 0.5, y + 0.5, width - 1, height - 1);
-
-    this.ctx.font = "10px monospace";
-    this.ctx.fillStyle = "#ffffff";
-    this.ctx.textAlign = "left";
-    this.ctx.textBaseline = "middle";
-
-    this.ctx.fillText(
-      `Mana ${Math.floor(mana)}/${maxMana}`,
-      x + width + 8,
-      y + height / 2,
-    );
-  }
-
-  drawComboIndicator(combo) {
-    if (combo <= 0) return;
-
-    this.ctx.font = "bold 12px monospace";
-    this.ctx.textAlign = "left";
-    this.ctx.textBaseline = "middle";
-
-    this.ctx.fillStyle = combo >= 10 ? "#ffcf4f" : "#ffffff";
-
-    this.ctx.fillText(`Combo x${combo}`, 12, 40);
-  }
-
   drawSpellIndicator(activeSpell) {
     const label = SPELL_LABELS[activeSpell] ?? activeSpell;
     const color = SPELL_COLORS[activeSpell] ?? "#ffffff";
@@ -734,34 +677,134 @@ export class Renderer {
     this.ctx.strokeRect(x + 0.5, barY + 0.5, width - 1, barHeight - 1);
   }
 
-  drawBaseHudBar(platform) {
+  drawKeepHud(platform) {
     if (!platform) return;
 
-    const width = 200;
-    const height = 16;
+    const x = 12;
+    const y = 12;
 
-    const x = (this.canvas.width - width) / 2;
-    const y = 10;
+    const width = 170;
+    const height = 16;
 
     const ratio = Math.max(
       0,
       Math.min(1, platform.health / platform.maxHealth),
     );
 
-    this.ctx.font = "bold 10px monospace";
-    this.ctx.textAlign = "center";
-    this.ctx.fillStyle = "#d4af37";
-    this.ctx.fillText("KEEP", x + width / 2, y - 4);
-
-    this.ctx.fillStyle = "#3a1a1a";
+    // Bar background
+    this.ctx.fillStyle = "#171717";
     this.ctx.fillRect(x, y, width, height);
 
-    this.ctx.fillStyle = "#e74c3c";
-    this.ctx.fillRect(x + 1, y + 1, (width - 2) * ratio, height - 2);
+    // Health background
+    this.ctx.fillStyle = "#3a1a1a";
+    this.ctx.fillRect(x + 1, y + 1, width - 2, height - 2);
 
+    // Health fill
+    const fillWidth = Math.round((width - 2) * ratio);
+
+    this.ctx.fillStyle = "#e74c3c";
+    this.ctx.fillRect(x + 1, y + 1, fillWidth, height - 2);
+
+    // Gold border
     this.ctx.strokeStyle = "#d4af37";
-    this.ctx.lineWidth = 2;
-    this.ctx.strokeRect(x, y, width, height);
+    this.ctx.lineWidth = 1;
+
+    this.ctx.strokeRect(x + 0.5, y + 0.5, width - 1, height - 1);
+
+    // Text
+    this.ctx.font = "bold 10px monospace";
+    this.ctx.textAlign = "center";
+    this.ctx.textBaseline = "middle";
+
+    this.ctx.fillStyle = "#ffffff";
+
+    this.ctx.fillText(
+      `HEALTH  ${Math.ceil(platform.health)}/${Math.ceil(platform.maxHealth)}`,
+      Math.round(x + width / 2),
+      Math.round(y + height / 2),
+    );
+  }
+
+  drawManaBar(mana, maxMana) {
+    const x = 12;
+    const y = 38;
+
+    const width = 170;
+    const height = 16;
+
+    const ratio = maxMana > 0 ? Math.max(0, Math.min(1, mana / maxMana)) : 0;
+
+    // Bar background
+    this.ctx.fillStyle = "#171717";
+    this.ctx.fillRect(x, y, width, height);
+
+    // Mana fill
+    this.ctx.fillStyle = "#4f8fe0";
+
+    this.ctx.fillRect(
+      x + 1,
+      y + 1,
+      Math.round((width - 2) * ratio),
+      height - 2,
+    );
+
+    // Border
+    this.ctx.strokeStyle = "#000";
+    this.ctx.lineWidth = 1;
+
+    this.ctx.strokeRect(x + 0.5, y + 0.5, width - 1, height - 1);
+
+    // Text
+    this.ctx.font = "bold 10px monospace";
+    this.ctx.textAlign = "center";
+    this.ctx.textBaseline = "middle";
+
+    this.ctx.fillStyle = "#ffffff";
+
+    this.ctx.fillText(
+      `MANA  ${Math.floor(mana)}/${Math.floor(maxMana)}`,
+      Math.round(x + width / 2),
+      Math.round(y + height / 2),
+    );
+  }
+
+  drawComboIndicator(combo) {
+    if (combo <= 0) return;
+
+    const x = 12;
+    const y = 68;
+
+    this.ctx.font = "bold 10px monospace";
+
+    const text = `COMBO x${combo}`;
+    const textWidth = this.ctx.measureText(text).width;
+
+    const paddingX = 6;
+    const width = Math.ceil(textWidth + paddingX * 2);
+    const height = 16;
+
+    // Background
+    this.ctx.fillStyle = "rgba(10, 10, 10, 0.85)";
+    this.ctx.fillRect(x, y, width, height);
+
+    // Border
+    this.ctx.strokeStyle = combo >= 10 ? "#ffcf4f" : "#555555";
+
+    this.ctx.lineWidth = 1;
+
+    this.ctx.strokeRect(x + 0.5, y + 0.5, width - 1, height - 1);
+
+    // Text
+    this.ctx.textAlign = "center";
+    this.ctx.textBaseline = "middle";
+
+    this.ctx.fillStyle = combo >= 10 ? "#ffcf4f" : "#ffffff";
+
+    this.ctx.fillText(
+      text,
+      Math.round(x + width / 2),
+      Math.round(y + height / 2),
+    );
   }
 
   drawReadyScreen() {

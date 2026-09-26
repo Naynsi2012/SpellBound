@@ -2,7 +2,7 @@ import wavesData from "../data/waves.json";
 import { Enemy } from "../entities/enemy.js";
 
 const BASE_HEALTH = 100;
-const BASE_SPEED = 40;
+const BASE_SPEED = 30;
 const BOSS_SPEED_MULTIPLIER = 0.6;
 
 let currentWaveIndex = 0;

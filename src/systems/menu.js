@@ -1,6 +1,7 @@
 const OPTIONS = [
     { label: "Start Game", mapId: "spawn" },
-    { label: "Training Area", mapId: "training" }
+    { label: "Training Area", mapId: "training" },
+    { label: "Endless Mode (Coming Soon)" }
 ];
 
 let selectedIndex = 0;

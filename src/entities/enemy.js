@@ -19,7 +19,7 @@ export class Enemy {
     this.isAttacking = false;
     this.attackTimer = 0;
     this.attackCooldown = 1000;
-    this.attackDamage = 10;
+    this.attackDamage = 5;
 
     this.damagePerWord = maxHealth / words.length;
     this.flashTimer = 0;
