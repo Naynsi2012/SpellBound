@@ -2,14 +2,63 @@ import { Enemy } from "../entities/enemy.js";
 import { TILE_SIZE } from "../core/constants.js";
 
 const WORD_POOL = [
+  // Very easy
   "fire",
   "water",
   "wind",
+  "rock",
+  "star",
+  "moon",
+  "light",
+  "dark",
+  "rain",
+  "snow",
+  "tree",
+  "wave",
+  "flame",
+  "frost",
+
+  // Easy
   "storm",
-  "cream",
-  "dragon",
-  "shield",
   "spark",
+  "shield",
+  "sword",
+  "stone",
+  "cloud",
+  "river",
+  "forest",
+  "shadow",
+  "magic",
+  "spell",
+  "arrow",
+  "blade",
+  "heart",
+
+  // Medium
+  "dragon",
+  "castle",
+  "wizard",
+  "knight",
+  "guardian",
+  "village",
+  "crystal",
+  "thunder",
+  "summon",
+  "portal",
+  "monster",
+  "phantom",
+  "warrior",
+  "ancient",
+
+  // Slightly harder
+  "darkness",
+  "fireball",
+  "lightning",
+  "enchanted",
+  "mystical",
+  "battlefield",
+  "spellcaster",
+  "stormcaller"
 ];
 
 const SCARECROW_HEALTH = 60;

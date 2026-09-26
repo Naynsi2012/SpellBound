@@ -1,32 +1,485 @@
 {
-    "waves": [
+  "waves": [
+    {
+      "name": "First Sparks",
+      "enemies": [
         {
-            "enemies": [
-                { "words": ["fire", "summon", "hybrid"], "spriteId": "soldier", "spawnDelay": 0 },
-                { "words": ["fire", "summon", "hybrid"], "spriteId": "soldier", "spawnDelay": 2000 },
-                { "words": ["dragon", "cream", "pokemon"], "spriteId": "slime", "spawnDelay": 1000 },
-                { "words": ["dragon", "cream", "pokemon"], "spriteId": "slime", "spawnDelay": 1500 },
-                { "words": ["dragon", "cream", "pokemon"], "spriteId": "slime", "spawnDelay": 2000 }
-            ]
+          "words": ["fire", "wind"],
+          "spriteId": "soldier",
+          "spawnDelay": 0
         },
         {
-            "enemies": [
-                { "words": ["dragon"], "spriteId": "soldier", "spawnDelay": 0 },
-                { "words": ["fire", "cream"], "spriteId": "soldier", "spawnDelay": 1000 },
-                { "words": ["storm"], "spriteId": "soldier", "spawnDelay": 2000 },
-                { "words": ["storm"], "spriteId": "soldier", "spawnDelay": 2800 },
-                { "words": ["water", "wind"], "spriteId": "soldier", "spawnDelay": 3800 },
-                { "words": ["fire"], "spriteId": "slime", "spawnDelay": 4800 }
-            ]
+          "words": ["water", "light"],
+          "spriteId": "soldier",
+          "spawnDelay": 2200
         },
         {
-            "enemies": [
-                { "words": ["fire", "cream", "storm"], "spriteId": "slime", "spawnDelay": 0 },
-                { "words": ["dragon", "wind"], "spriteId": "soldier", "spawnDelay": 1200 },
-                { "words": ["water"], "spriteId": "soldier", "spawnDelay": 2200 },
-                { "words": ["storm"], "spriteId": "slime", "spawnDelay": 2800 },
-                { "words": ["boss", "guardian", "slime"], "spriteId": "slime", "spawnDelay": 5000, "isBoss": true, "healthMultiplier": 4 }
-            ]
+          "words": ["rock", "rain"],
+          "spriteId": "slime",
+          "spawnDelay": 4400
         }
-    ]
+      ]
+    },
+
+    {
+      "name": "Small Threats",
+      "enemies": [
+        {
+          "words": ["fire", "spark"],
+          "spriteId": "soldier",
+          "spawnDelay": 0
+        },
+        {
+          "words": ["water", "wind"],
+          "spriteId": "slime",
+          "spawnDelay": 1400
+        },
+        {
+          "words": ["stone", "flame"],
+          "spriteId": "soldier",
+          "spawnDelay": 2800
+        },
+        {
+          "words": ["storm", "frost"],
+          "spriteId": "slime",
+          "spawnDelay": 4200
+        }
+      ]
+    },
+
+    {
+      "name": "Forest Raiders",
+      "enemies": [
+        {
+          "words": ["forest", "shadow"],
+          "spriteId": "soldier",
+          "spawnDelay": 0
+        },
+        {
+          "words": ["dragon", "spark"],
+          "spriteId": "slime",
+          "spawnDelay": 1100
+        },
+        {
+          "words": ["shield", "sword"],
+          "spriteId": "soldier",
+          "spawnDelay": 2200
+        },
+        {
+          "words": ["magic", "flame"],
+          "spriteId": "slime",
+          "spawnDelay": 3300
+        },
+        {
+          "words": ["castle", "storm"],
+          "spriteId": "soldier",
+          "spawnDelay": 4400
+        }
+      ]
+    },
+
+    {
+      "name": "Gathering Storm",
+      "enemies": [
+        {
+          "words": ["thunder", "storm"],
+          "spriteId": "slime",
+          "spawnDelay": 0
+        },
+        {
+          "words": ["dragon", "water"],
+          "spriteId": "soldier",
+          "spawnDelay": 1000
+        },
+        {
+          "words": ["crystal", "light"],
+          "spriteId": "slime",
+          "spawnDelay": 2000
+        },
+        {
+          "words": ["guardian", "shield"],
+          "spriteId": "soldier",
+          "spawnDelay": 3000
+        },
+        {
+          "words": ["wizard", "magic"],
+          "spriteId": "slime",
+          "spawnDelay": 4000
+        },
+        {
+          "words": ["storm", "flame"],
+          "spriteId": "soldier",
+          "spawnDelay": 5000
+        }
+      ]
+    },
+
+    {
+      "name": "The Horde",
+      "enemies": [
+        {
+          "words": ["dragon", "storm", "flame"],
+          "spriteId": "soldier",
+          "spawnDelay": 0
+        },
+        {
+          "words": ["shadow", "phantom"],
+          "spriteId": "slime",
+          "spawnDelay": 750
+        },
+        {
+          "words": ["knight", "sword"],
+          "spriteId": "soldier",
+          "spawnDelay": 1500
+        },
+        {
+          "words": ["crystal", "thunder"],
+          "spriteId": "slime",
+          "spawnDelay": 2250
+        },
+        {
+          "words": ["guardian", "ancient"],
+          "spriteId": "soldier",
+          "spawnDelay": 3000
+        },
+        {
+          "words": ["darkness", "shadow"],
+          "spriteId": "slime",
+          "spawnDelay": 3750
+        },
+        {
+          "words": ["warrior", "shield"],
+          "spriteId": "soldier",
+          "spawnDelay": 4500
+        }
+      ]
+    },
+
+    {
+      "name": "Broken Defenses",
+      "enemies": [
+        {
+          "words": ["lightning", "storm"],
+          "spriteId": "soldier",
+          "spawnDelay": 0
+        },
+        {
+          "words": ["guardian", "crystal"],
+          "spriteId": "slime",
+          "spawnDelay": 700
+        },
+        {
+          "words": ["warrior", "ancient"],
+          "spriteId": "soldier",
+          "spawnDelay": 1400
+        },
+        {
+          "words": ["phantom", "darkness"],
+          "spriteId": "slime",
+          "spawnDelay": 2100
+        },
+        {
+          "words": ["enchanted", "wizard"],
+          "spriteId": "soldier",
+          "spawnDelay": 2800
+        },
+        {
+          "words": ["thunder", "guardian"],
+          "spriteId": "slime",
+          "spawnDelay": 3500
+        },
+        {
+          "words": ["fireball", "dragon"],
+          "spriteId": "soldier",
+          "spawnDelay": 4200
+        },
+        {
+          "words": ["stormcaller", "shadow"],
+          "spriteId": "slime",
+          "spawnDelay": 4900
+        }
+      ]
+    },
+
+    {
+      "name": "The Guardian",
+      "enemies": [
+        {
+          "words": ["fireball", "flame"],
+          "spriteId": "soldier",
+          "spawnDelay": 0
+        },
+        {
+          "words": ["phantom", "darkness"],
+          "spriteId": "slime",
+          "spawnDelay": 650
+        },
+        {
+          "words": ["spellcaster", "magic"],
+          "spriteId": "soldier",
+          "spawnDelay": 1300
+        },
+        {
+          "words": ["thunder", "lightning"],
+          "spriteId": "slime",
+          "spawnDelay": 1950
+        },
+        {
+          "words": ["guardian", "ancient"],
+          "spriteId": "soldier",
+          "spawnDelay": 2600
+        },
+        {
+          "words": ["stormcaller", "enchanted"],
+          "spriteId": "slime",
+          "spawnDelay": 3250
+        },
+        {
+          "words": ["overlord", "guardian"],
+          "spriteId": "slime",
+          "spawnDelay": 4000,
+          "isBoss": true,
+          "healthMultiplier": 2
+        }
+      ]
+    },
+
+    {
+      "name": "Dark March",
+      "enemies": [
+        {
+          "words": ["darkness", "phantom", "shadow"],
+          "spriteId": "slime",
+          "spawnDelay": 0
+        },
+        {
+          "words": ["spellcaster", "wizard"],
+          "spriteId": "soldier",
+          "spawnDelay": 600
+        },
+        {
+          "words": ["lightning", "thunder"],
+          "spriteId": "slime",
+          "spawnDelay": 1200
+        },
+        {
+          "words": ["guardian", "ancient"],
+          "spriteId": "soldier",
+          "spawnDelay": 1800
+        },
+        {
+          "words": ["stormcaller", "dragon"],
+          "spriteId": "slime",
+          "spawnDelay": 2400
+        },
+        {
+          "words": ["fireball", "enchanted"],
+          "spriteId": "soldier",
+          "spawnDelay": 3000
+        },
+        {
+          "words": ["shadowrealm", "darkness"],
+          "spriteId": "slime",
+          "spawnDelay": 3600
+        },
+        {
+          "words": ["necromancer", "summon"],
+          "spriteId": "soldier",
+          "spawnDelay": 4200
+        }
+      ]
+    },
+
+    {
+      "name": "The Forgotten",
+      "enemies": [
+        {
+          "words": ["necromancer", "summon"],
+          "spriteId": "soldier",
+          "spawnDelay": 0
+        },
+        {
+          "words": ["shadowrealm", "phantom"],
+          "spriteId": "slime",
+          "spawnDelay": 550
+        },
+        {
+          "words": ["spellcaster", "enchanted"],
+          "spriteId": "soldier",
+          "spawnDelay": 1100
+        },
+        {
+          "words": ["stormcaller", "lightning"],
+          "spriteId": "slime",
+          "spawnDelay": 1650
+        },
+        {
+          "words": ["dragonfire", "ancient"],
+          "spriteId": "soldier",
+          "spawnDelay": 2200
+        },
+        {
+          "words": ["battlefield", "guardian"],
+          "spriteId": "slime",
+          "spawnDelay": 2750
+        },
+        {
+          "words": ["resurrection", "necromancer"],
+          "spriteId": "soldier",
+          "spawnDelay": 3300
+        },
+        {
+          "words": ["deathbringer", "overlord"],
+          "spriteId": "slime",
+          "spawnDelay": 3900,
+          "isBoss": true,
+          "healthMultiplier": 3
+        }
+      ]
+    },
+
+    {
+      "name": "Cataclysm",
+      "enemies": [
+        {
+          "words": ["thunderstorm", "lightning"],
+          "spriteId": "soldier",
+          "spawnDelay": 0
+        },
+        {
+          "words": ["spellcaster", "necromancer"],
+          "spriteId": "slime",
+          "spawnDelay": 500
+        },
+        {
+          "words": ["dragonfire", "stormcaller"],
+          "spriteId": "soldier",
+          "spawnDelay": 1000
+        },
+        {
+          "words": ["shadowrealm", "darkness"],
+          "spriteId": "slime",
+          "spawnDelay": 1500
+        },
+        {
+          "words": ["crystalized", "enchanted"],
+          "spriteId": "soldier",
+          "spawnDelay": 2000
+        },
+        {
+          "words": ["dimensional", "ancient"],
+          "spriteId": "slime",
+          "spawnDelay": 2500
+        },
+        {
+          "words": ["destruction", "battlefield"],
+          "spriteId": "soldier",
+          "spawnDelay": 3000
+        },
+        {
+          "words": ["worldbreaker", "cataclysm"],
+          "spriteId": "slime",
+          "spawnDelay": 3500,
+          "isBoss": true,
+          "healthMultiplier": 3
+        }
+      ]
+    },
+
+    {
+      "name": "End of the Realm",
+      "enemies": [
+        {
+          "words": ["annihilation", "destruction"],
+          "spriteId": "soldier",
+          "spawnDelay": 0
+        },
+        {
+          "words": ["transformation", "dimensional"],
+          "spriteId": "slime",
+          "spawnDelay": 450
+        },
+        {
+          "words": ["resurrection", "necromancer"],
+          "spriteId": "soldier",
+          "spawnDelay": 900
+        },
+        {
+          "words": ["thunderstorm", "stormcaller"],
+          "spriteId": "slime",
+          "spawnDelay": 1350
+        },
+        {
+          "words": ["unforgiving", "overwhelming"],
+          "spriteId": "soldier",
+          "spawnDelay": 1800
+        },
+        {
+          "words": ["apocalypse", "immortal"],
+          "spriteId": "slime",
+          "spawnDelay": 2250
+        },
+        {
+          "words": ["deathbringer", "worldbreaker"],
+          "spriteId": "soldier",
+          "spawnDelay": 2700
+        },
+        {
+          "words": ["dragonlord", "shadowking"],
+          "spriteId": "slime",
+          "spawnDelay": 3300,
+          "isBoss": true,
+          "healthMultiplier": 4
+        }
+      ]
+    },
+
+    {
+      "name": "The Final Spell",
+      "enemies": [
+        {
+          "words": ["necromancer", "resurrection"],
+          "spriteId": "soldier",
+          "spawnDelay": 0
+        },
+        {
+          "words": ["stormbringer", "thunderstorm"],
+          "spriteId": "slime",
+          "spawnDelay": 500
+        },
+        {
+          "words": ["flamekeeper", "dragonfire"],
+          "spriteId": "soldier",
+          "spawnDelay": 1000
+        },
+        {
+          "words": ["deathbringer", "annihilation"],
+          "spriteId": "slime",
+          "spawnDelay": 1500
+        },
+        {
+          "words": ["spellmaster", "incantation"],
+          "spriteId": "soldier",
+          "spawnDelay": 2100
+        },
+        {
+          "words": ["immortal", "apocalypse"],
+          "spriteId": "slime",
+          "spawnDelay": 2700
+        },
+        {
+          "words": ["ancientone", "worldbreaker"],
+          "spriteId": "soldier",
+          "spawnDelay": 3300
+        },
+        {
+          "words": ["dragonlord", "overlord", "shadowking"],
+          "spriteId": "slime",
+          "spawnDelay": 4000,
+          "isBoss": true,
+          "healthMultiplier": 5
+        }
+      ]
+    }
+  ]
 }
