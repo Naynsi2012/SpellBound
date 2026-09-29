@@ -2,7 +2,7 @@
 
 **Spellbound Keep** is a keyboard-only typing tower defense game where your typing is your main weapon.
 
-You play as a lone wizard defending a keep from waves of creatures. Enemies follow a path toward the keep, with words displayed above them. Type the word correctly to attack them. The game is designed around typing accuracy and decision-making rather than simply typing as fast as possible.
+Enemies follow a path toward the keep, with words displayed above them. Type the word correctly to attack them. The game is designed around typing accuracy and decision-making rather than simply typing as fast as possible.
 
 There are also a few spells you can switch between, so completing a word isn't always just about dealing damage. You can choose effects such as **Slow, Burn, or Paralyze** depending on the situation.
 
@@ -59,51 +59,6 @@ The TMX files contain the visual tile layers as well as object-layer information
 
 This makes it possible to change the level visually in Tiled without having to manually rewrite the game's map coordinates.
 
-## AI Usage
-
-AI assistance was used during development mainly for **debugging and working through the TMX-based map system**.
-
-In particular, AI was used to help with:
-
-* Understanding and implementing the `TMX` map loading pipeline.
-* Building the `tmxLoader` logic so the `.tmx` map data could work with the game's existing rendering and gameplay systems.
-* Connecting Tiled map data with the existing enemy path and keep systems.
-* Debugging issues that came up while integrating the new map system with the existing codebase.
-* Helping identify and fix smaller implementation issues during development.
-
-The gameplay systems, game design, asset selection, level design, and overall project direction were developed as part of the project itself.
-
-## How to Run Locally
-
-### 1. Clone or download the repository
-
-```bash
-git clone <repository-url>
-cd spellbound-keep
-```
-
-### 2. Install dependencies
-
-```bash
-npm install
-```
-
-### 3. Start the development server
-
-```bash
-npm run dev
-```
-
-### 4. Open the local URL
-
-Vite will print the local development URL in the terminal, usually:
-
-```text
-http://localhost:5173
-```
-
-Vite provides hot reloading during development, so changes to the source files can be tested immediately.
-
 ## Controls
 
 The game is designed around keyboard input.
@@ -129,3 +84,48 @@ The exact controls can vary depending on the current game state.
 8. Complete every wave to defend the keep.
 
 The idea is to make typing itself feel like the combat system rather than simply using typing as an input method for a traditional tower defense game.
+
+## AI Usage
+
+AI assistance was used during development mainly for **debugging and working through the TMX-based map system**.
+
+In particular, AI was used to help with:
+
+* Understanding and implementing the `TMX` map loading pipeline.
+* Building the `tmxLoader` logic so the `.tmx` map data could work with the game's existing rendering and gameplay systems.
+* Connecting Tiled map data with the existing enemy path and keep systems.
+* Debugging issues that came up while integrating the new map system with the existing codebase.
+* Helping identify and fix smaller implementation issues during development.
+
+The gameplay systems, game design, asset selection, level design, and overall project direction were developed as part of the project itself.
+
+## How to Run Locally
+
+### 1. Clone or download the repository
+
+```bash
+git clone https://github.com/Naynsi2012/SpellBound.git
+cd SpellBound
+```
+
+### 2. Install dependencies
+
+```bash
+npm install
+```
+
+### 3. Start the development server
+
+```bash
+npm run dev
+```
+
+### 4. Open the local URL
+
+Vite will print the local development URL in the terminal, usually:
+
+```text
+http://localhost:5173
+```
+
+Vite provides hot reloading during development, so changes to the source files can be tested immediately.
