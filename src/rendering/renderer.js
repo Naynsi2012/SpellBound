@@ -106,6 +106,10 @@ export class Renderer {
       this.drawGameOverScreen();
     }
 
+    if (state === "paused") {
+      this.drawPausedScreen();
+    }
+
     if (state === "victory") {
       this.drawVictoryScreen();
     }
@@ -809,6 +813,10 @@ export class Renderer {
 
   drawReadyScreen() {
     this.drawOverlay("Press ENTER to start the wave");
+  }
+
+  drawPausedScreen() {
+    this.drawOverlay("Paused - Press ESC to resume");
   }
 
   drawGameOverScreen() {

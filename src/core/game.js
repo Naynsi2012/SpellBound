@@ -167,6 +167,14 @@ export class Game {
       resetSelection();
       return;
     }
+    if (this.state === "playing" && e.key === "Escape") {
+      this.state = "paused";
+      return;
+    }
+    if (this.state === "paused" && e.key === "Escape") {
+      this.state = "playing";
+      return;
+    }
     if (this.state === "victory" && e.key === "Enter") {
       this.state = "menu";
       resetSelection();
