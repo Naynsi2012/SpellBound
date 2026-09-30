@@ -116,7 +116,11 @@ npm install
 
 ### 3. Start the development server
 
-```bash
+```bash<img width="1134" height="671" alt="Screenshot 2026-09-30 at 11 38 07 PM" src="https://github.com/user-attachments/assets/4daf7d1c-3696-41c4-a952-0870cbfb3fe6" />
+<img width="1134" height="671" alt="Screenshot 2026-09-30 at 11 37 09 PM" src="https://github.com/user-attachments/assets/85bb96ad-70da-4684-a31a-e116a2d5b3e9" />
+<img width="1134" height="671" alt="Screenshot 2026-09-30 at 11 37 45 PM" src="https://github.com/user-attachments/assets/1038b411-e1b6-4a86-a6b4-a98b824d59ef" />
+<img width="1134" height="671" alt="Screenshot 2026-09-30 at 11 37 16 PM" src="https://github.com/user-attachments/assets/013d3b74-b211-4ce3-a3f1-d9ef8330e0c8" />
+
 npm run dev
 ```
 
@@ -129,3 +133,7 @@ http://localhost:5173
 ```
 
 Vite provides hot reloading during development, so changes to the source files can be tested immediately.
+<img width="1134" height="671" alt="Screenshot 2026-09-30 at 11 38 07 PM" src="https://github.com/user-attachments/assets/de42022e-6995-4164-a243-226a34bdd004" />
+<img width="1134" height="671" alt="Screenshot 2026-09-30 at 11 37 09 PM" src="https://github.com/user-attachments/assets/75093293-05b2-4a0f-9005-bcfc7714ccf7" />
+<img width="1134" height="671" alt="Screenshot 2026-09-30 at 11 37 45 PM" src="https://github.com/user-attachments/assets/684f6766-223a-4622-9531-1b2edb4bb4aa" />
+<img width="1134" height="671" alt="Screenshot 2026-09-30 at 11 37 16 PM" src="https://github.com/user-attachments/assets/040c46ed-ff14-418c-88e5-8f86f35fe71e" />
