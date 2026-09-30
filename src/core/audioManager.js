@@ -1,11 +1,11 @@
 const SOUNDS = {
-  select: "/src/assets/audio/select.wav",
-  lost: "/src/assets/audio/lost.wav",
-  won: "/src/assets/audio/won.mp3",
-  waveWon: "/src/assets/audio/wave-won.wav",
-  type: "/src/assets/audio/type.wav",
-  death: "/src/assets/audio/death.wav",
-  spellSwitch: "/src/assets/audio/spell-switch.wav"
+  select: "/assets/audio/select.wav",
+  lost: "/assets/audio/lost.wav",
+  won: "/assets/audio/won.mp3",
+  waveWon: "/assets/audio/wave-won.wav",
+  type: "/assets/audio/type.wav",
+  death: "/assets/audio/death.wav",
+  spellSwitch: "/assets/audio/spell-switch.wav"
 };
 
 export class AudioManager {

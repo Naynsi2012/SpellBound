@@ -1,5 +1,4 @@
 import { Renderer } from "../rendering/renderer.js";
-import { loadEnemySprites } from "../assets/loader.js";
 import { TILE_SIZE } from "./constants.js";
 import { Enemy } from "../entities/enemy.js";
 import { updateEnemyPositions } from "../systems/movement.js";
@@ -47,7 +46,7 @@ import { AudioManager } from "./audioManager.js";
 import dummyData from "../data/dummies.json";
 
 import { loadTmxMap } from "../map/tmxLoader.js";
-import { loadTilesetImages } from "../assets/loader.js";
+import { loadTilesetImages, loadEnemySprites } from "../utils/loader.js";
 
 const MAPS = {
   spawn: "/src/data/maps/spawn.tmx",
