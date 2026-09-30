@@ -49,8 +49,8 @@ import { loadTmxMap } from "../map/tmxLoader.js";
 import { loadTilesetImages, loadEnemySprites } from "../utils/loader.js";
 
 const MAPS = {
-  spawn: "/src/data/maps/spawn.tmx",
-  training: "/src/data/maps/training.tmx",
+  spawn: "/maps/spawn.tmx",
+  training: "/maps/training.tmx",
 };
 
 export class Game {
