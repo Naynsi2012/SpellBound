@@ -29,7 +29,7 @@ const TILESET_FILES = [
     "tilemap_packed", "dungeon_tilemap_packed", "Tileset Grass Spring",
 ];
 
-export async function loadTilesetImages(basePath = "/src/assets/tilesets/") {
+export async function loadTilesetImages(basePath = "/assets/tilesets/") {
     const entries = await Promise.all(
         TILESET_FILES.map((name) => loadImage(`${basePath}${name}.png`).then((img) => [name, img]))
     );
