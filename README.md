@@ -133,6 +133,10 @@ http://localhost:5173
 ```
 
 Vite provides hot reloading during development, so changes to the source files can be tested immediately.
+
+
+SCREENSHOTS: 
+
 <img width="1134" height="671" alt="Screenshot 2026-09-30 at 11 38 07 PM" src="https://github.com/user-attachments/assets/de42022e-6995-4164-a243-226a34bdd004" />
 <img width="1134" height="671" alt="Screenshot 2026-09-30 at 11 37 09 PM" src="https://github.com/user-attachments/assets/75093293-05b2-4a0f-9005-bcfc7714ccf7" />
 <img width="1134" height="671" alt="Screenshot 2026-09-30 at 11 37 45 PM" src="https://github.com/user-attachments/assets/684f6766-223a-4622-9531-1b2edb4bb4aa" />
