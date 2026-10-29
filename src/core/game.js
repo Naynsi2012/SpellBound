@@ -261,8 +261,8 @@ export class Game {
       this.enemies.push(...spawned);
     }
 
-    const locked = getLockedEnemy();
-    if (locked && locked.reachedEnd) interruptCast();
+    // const locked = getLockedEnemy();
+    // if (locked && locked.reachedEnd) interruptCast();
 
     this.enemies = this.enemies.filter((enemy) => {
       if (!enemy.isAlive() && enemy.deathTimer >= ENEMY_DEATH_LINGER_MS)
